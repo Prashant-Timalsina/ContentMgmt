@@ -18,19 +18,38 @@ class RoleSeeder extends Seeder
         // Created Permission and assigned roles with permissions
         app() [PermissionRegistrar::class]->forgetCachedPermissions();
 
-        Permission::create(['name' => 'create articles']);
-        Permission::create(['name' => 'edit articles']);
-        Permission::create(['name' => 'view articles']);
-        Permission::create(['name' => 'delete articles']);
+        //Create Permissions if not exists
 
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo(Permission::all());
+        $permissions = ['create articles','edit articles','view articles','delete articles'];
 
-        $editor = Role::create(['name' => 'editor']);
-        $editor->givePermissionTo(['edit articles','create articles','view articles']);
+        foreach ($permissions as $permyKun) {
+            Permission::firstOrCreate(
+                ['name' => $permyKun],
+                ['guard_name' => 'api'] 
+            );
+        }
 
-        $user = Role::create(['name' => 'user']);
-        $user->givePermissionTo(['view articles']);
+
+
+        // Create role and assign permissions
+        $admin = Role::firstOrCreate(
+            ['name' => 'admin'],
+            ['guard_name' => 'api']  
+        );
+
+        $editor = Role::firstOrCreate(
+            ['name' => 'editor'],
+            ['guard_name' => 'api']
+        );
+
+        $user = Role::firstOrCreate(
+            ['name' => 'user'],
+            ['guard_name' => 'api']
+        );
+        
+        $admin->syncPermissions(Permission::all());
+        $editor->syncPermissions(['edit articles','create articles','view articles']);
+        $user->syncPermissions(['view articles']);
         
     }
 }

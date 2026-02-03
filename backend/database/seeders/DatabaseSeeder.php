@@ -17,6 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Roles & Permissions
+        $this->call([
+            \Database\Seeders\RoleSeeder::class,
+        ]);
+
+        // Admin user
+        $this->call([
+            \Database\Seeders\AdminSeeder::class,
+        ]);
+        
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
