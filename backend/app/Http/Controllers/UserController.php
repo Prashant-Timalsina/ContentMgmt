@@ -21,7 +21,6 @@ class UserController extends Controller
             return response()->json(['message'=>"Invalid Credentials"],401);
         }
 
-        $user->tokens()->delete();
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -54,5 +53,14 @@ class UserController extends Controller
             'role'=>$user->getRoleNames()->first(),
             'token' => $token
         ],200);
+    }
+
+    public function logout(Request $request){
+        return $request->user->currentAccessToken()->delete();
+    }
+
+    public function logoutAll(Request $request)
+    {
+        return $request->user->tokens()->delete();
     }
 }
