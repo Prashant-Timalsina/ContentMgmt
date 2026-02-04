@@ -25,6 +25,7 @@ class UserController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
+            'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role'=>$user->getRoleNames()->first(),
@@ -48,6 +49,7 @@ class UserController extends Controller
         $token=$user->createToken('api-token')->plainTextToken;
 
         return response()->json([
+            'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role'=>$user->getRoleNames()->first(),
@@ -56,11 +58,32 @@ class UserController extends Controller
     }
 
     public function logout(Request $request){
-        return $request->user->currentAccessToken()->delete();
+        $user = $request->user();
+
+        if(!user){
+            return response()->json([
+            'message'=>'Not Authenticated'
+        ],401);
+        }
+        $user->currentAccessToken()->delete();
+        return response()->json([
+            'message'=>'Logged out of this device'
+        ],200);
+        
     }
 
     public function logoutAll(Request $request)
     {
-        return $request->user->tokens()->delete();
+        $user = $request->user();
+
+        if(!user){
+            return response()->json([
+                'message'=>'Not Authenticated'
+            ],401);
+        }
+        $user->tokens()->delete();
+        return response()->json([
+            'message'=>'Logged out of every devices'
+        ],200);
     }
 }
