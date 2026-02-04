@@ -60,7 +60,7 @@ class UserController extends Controller
     public function logout(Request $request){
         $user = $request->user();
 
-        if(!user){
+        if(!$user){
             return response()->json([
             'message'=>'Not Authenticated'
         ],401);
@@ -76,7 +76,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        if(!user){
+        if(!$user){
             return response()->json([
                 'message'=>'Not Authenticated'
             ],401);
