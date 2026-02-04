@@ -26,7 +26,9 @@ class UserController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role'=>$user->getRoleNames()->first(),
             'token' => $token
         ],201);
     }
@@ -47,8 +49,10 @@ class UserController extends Controller
         $token=$user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user'=>$user,
-            'token'=>$token
+            'name' => $user->name,
+            'email' => $user->email,
+            'role'=>$user->getRoleNames()->first(),
+            'token' => $token
         ],200);
     }
 }
