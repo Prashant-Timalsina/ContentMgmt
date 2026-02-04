@@ -35,7 +35,7 @@ class UserController extends Controller
         $credentials = $request->validate([
             'name'=>'string|required',
             'email'=>'required|email|unique:users,email',
-            'password'=>'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&]).+$/'
+            'password'=>'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'
         ]);
 
         $user=User::create([

@@ -5,11 +5,11 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
 
-Route::post('/login',[UserController::class])->name('user.login');
-Route::post('/register',[UserController::class])->name('user.register');
+Route::post('/login',[UserController::class,'login'])->name('user.login');
+Route::post('/register',[UserController::class,'register'])->name('user.register');
 
-Route::middleware('auth:sanctum')->group( function () {
-    Route::get('me', function (Request $request){
+Route::middleware('auth:sanctum')->group(function() {
+    Route::get('me', function(Request $request){
         return $request->user();
     });
 });
