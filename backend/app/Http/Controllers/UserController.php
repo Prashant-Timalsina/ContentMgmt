@@ -17,18 +17,18 @@ class UserController extends Controller
 
         $user = User::where('email',$credentials['email'])->first();
 
-        if( !$user || Hash::check($credentials['password'], $user->password) ){
-            return response()->json(['message'=>"Invalid Credentials"]);
+        if( !$user || ! Hash::check($credentials['password'], $user->password) ){
+            return response()->json(['message'=>"Invalid Credentials"],401);
         }
 
-        $suer->tokens()->delete();
+        $user->tokens()->delete();
 
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'token' => $token
-        ]);
+        ],201);
     }
 
     public function register(Request $request){
@@ -49,6 +49,6 @@ class UserController extends Controller
         return response()->json([
             'user'=>$user,
             'token'=>$token
-        ]);
+        ],200);
     }
 }
