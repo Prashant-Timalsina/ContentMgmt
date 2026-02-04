@@ -6,7 +6,7 @@
 
         <q-toolbar-title> Quasar App </q-toolbar-title>
 
-        <q-btn flat dense round icon="dark_mode" @click="toggleDark"/>
+        <q-btn flat dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleDark"/>
       </q-toolbar>
     </q-header>
 
