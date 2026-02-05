@@ -9,13 +9,14 @@ const bgImage = computed(()=> {
 </script>
                 
 <template>
-    <q-layout view="ppp ppp ppp">
+    <q-layout view="lHh Lpr lFf">
         <q-page-container>
-            <q-page class="row items-stretch">
-                <div class="gt-sm col-12 col-md-6">
-                    <q-img :src="bgImage" class="full-height"/>
+            <q-page class="row no-wrap items-stretch">
+                <div class="col-6 image-section">
+                    <q-img :src="bgImage" class="full-height" fit="cover"/>
                 </div>
-                <div class="flex flex-center col-12 col-md-6">
+
+                <div class="col-6 form-section">
                     <router-view v-slot="{Component}">
                         <transition name="fade" mode="out-in">
                             <component :is="Component"/>
@@ -31,5 +32,18 @@ const bgImage = computed(()=> {
 .q-page{
     height:100vh;
     overflow: hidden;
+}
+
+.image-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
 }
 </style>
