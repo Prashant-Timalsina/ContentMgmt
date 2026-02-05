@@ -1,5 +1,6 @@
 import { defineBoot } from '#q-app/wrappers'
 import axios from 'axios'
+import {useAuthStore} from 'src/stores/authStore'
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -11,6 +12,23 @@ const api = axios.create({
   baseURL: 'https://localhost:8000',
   withCredentials:true
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const authStore = useAuthStore();
+    const originalRequest = error.config;
+
+    if( error.response.status === 401 && !originalRequest._retry){
+      originalRequest._retry = true;
+      await authStore.refresh();
+
+      originalRequest.headers['Authorizatiion'] = `Bearer ${authStore.accessToken}`;
+      return api(originalRequest)
+    }
+    return Promise.reject(error)
+  }
+)
 
 export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
