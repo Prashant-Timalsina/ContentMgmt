@@ -11,7 +11,7 @@ Route::post('/refresh',[UserController::class,'refresh'])->name('user.refresh');
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/me', function(Request $request){
-        return $request->user();
+        return $request->user()->load('roles','permissions');
     });
 
     Route::post('/logout',[UserController::class,'logout'])->name('user.logout');
