@@ -1,10 +1,12 @@
 <script setup>
+import { useQuasaMsgs } from 'src/helper/quasaDialogs';
 import { useAuthStore } from 'src/stores/authStore';
 import { ref } from 'vue';
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore()
+const notify = useQuasaMsgs();
 const router = useRouter();
 const loginForm = reactive({
     email:'',
@@ -18,7 +20,8 @@ const loading = ref(false)
 const submitHandler= async () =>{
     loading.value = true
     try {
-        await authStore.login(loginForm)
+        const response = await authStore.login(loginForm)
+        notify.success(`Welcome, ${response.data.user.name}`)
         router.push('/')
     }
     catch(err) {
