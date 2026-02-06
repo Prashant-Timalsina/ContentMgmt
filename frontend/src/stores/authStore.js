@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
         async register(credentials) {
             const res = await api.post('/api/register', credentials)
             this.handleAuthResponse(res.data);
+            console.log(res)
             return res
         },
             

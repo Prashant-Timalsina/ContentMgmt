@@ -7,9 +7,9 @@
         <q-toolbar-title> News Heram </q-toolbar-title>
 
         <div>
-          <q-btn @click="logout" label="logout"/>
+          <q-btn :color="$q.dark.isActive ? 'negative' : 'red'" class="q-mx-sm" @click="logout" label="logout"/>
         </div>
-        <q-btn flat dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleDark"/>
+        <q-btn flat  dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleDark"/>
       </q-toolbar>
     </q-header>
 

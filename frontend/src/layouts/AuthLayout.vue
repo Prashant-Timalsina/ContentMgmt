@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const bgImage = computed(()=> {
-    return route.path.includes('signup') ? '/signup.png' : '/login.png'
+    return route.path.includes('signup') ? '/register.jpg' : '/login.jpg'
 })
 </script>
                 
