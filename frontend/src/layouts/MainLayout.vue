@@ -33,7 +33,9 @@ import EssentialLink from 'components/EssentialLink.vue'
 import { Dark } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
 import { useRouter } from 'vue-router';
+import { useQuasaMsgs } from 'src/helper/quasaDialogs';
 
+const notify = useQuasaMsgs();
 const router = useRouter()
 const authStore = useAuthStore();
 const loading = ref(false)
@@ -99,6 +101,7 @@ async function logout  () {
     const response = await authStore.logout();
     console.log(response);
     router.push('/auth/login')
+    notify.success(response.data.message)
   }
   catch (e){
     console.log(e)
