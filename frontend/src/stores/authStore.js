@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 
-const authStore = defineStore('auth', {
+export const useAuthStore = defineStore('auth', {
     state :() => ({
         user:null,
         accessToken:null,
@@ -31,16 +31,24 @@ const authStore = defineStore('auth', {
                 this.user = res.data;
             } catch(e){
                 console.log(e);
-                this.logout();
             }
         },
 
         async logout(){
-            const response = await api.post('/logout')
+            const response = await api.post('/api/logout')
             console.log(response);
             this.user=null
             this.accessToken = null;
             delete api.defaults.headers.common['Authorization'];
+        },
+        async refresh() {
+            try{
+                const response = await api.post('/api/refresh');
+                console.log(response)
+                this.handleAuthResponse(response.data);
+            } catch (e) {
+                console.log(e)
+            }
         },
         async init(){
             try{
@@ -48,7 +56,10 @@ const authStore = defineStore('auth', {
                 await this.fetchUser();
             }
             catch (e) {
-                console.log('No active session found');
+                this.user = null
+                this.accessToken = null
+                delete api.defaults.headers.common['Authorization'];
+                console.log('User is a guest. Errors are:\n',e)
             }
             finally{
                 this.isReady = true;

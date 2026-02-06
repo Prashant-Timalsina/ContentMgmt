@@ -1,19 +1,32 @@
 <script setup>
+import { useAuthStore } from 'src/stores/authStore';
 import { ref } from 'vue';
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 
+const authStore = useAuthStore()
 const router = useRouter();
 const loginForm = reactive({
     email:'',
     password:'',
+    remember: false
 })
 
-const formComponent = ref(null)
-
 const isPassword = ref(true)
+const loading = ref(false)
 
-const submitHandler=() =>{
+const submitHandler= async () =>{
+    loading.value = true
+    try {
+        await authStore.login(loginForm)
+        router.push('/')
+    }
+    catch(err) {
+        console.log(err)
+    }
+    finally{
+        loading.value = false
+    }
 
     Object.assign(loginForm,{ email: '' , password:''})
 }
@@ -29,7 +42,7 @@ const submitHandler=() =>{
                 <div class="text-h5 q-mb-md text-weight-bold">
                     Welcome Back
                 </div>
-                <q-form ref="formComponent" @submit.prevent="submitHandler" class="q-gutter-y-md">
+                <q-form @submit.prevent="submitHandler" class="q-gutter-y-md">
                     <q-input label="Email" v-model="loginForm.email" outlined />
                     <q-input :type="isPassword ? 'password' : 'text'" label="Password" v-model="loginForm.password" outlined>
                         <template #append>
@@ -37,7 +50,7 @@ const submitHandler=() =>{
                         </template>
                     </q-input>
                     
-                    <q-btn  type="submit" label="register" color="primary"/>
+                    <q-btn  type="submit" label="Login" color="primary"/>
                     
                     <div class="text-center q-mt-md">
                         <span>Don't you have an account?</span>

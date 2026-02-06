@@ -4,8 +4,11 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> News Heram </q-toolbar-title>
 
+        <div>
+          <q-btn @click="logout" label="logout"/>
+        </div>
         <q-btn flat dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleDark"/>
       </q-toolbar>
     </q-header>
@@ -28,6 +31,12 @@
 import { ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { Dark } from 'quasar'
+import { useAuthStore } from 'src/stores/authStore'
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
+const authStore = useAuthStore();
+const loading = ref(false)
 
 const linksList = [
   {
@@ -82,5 +91,20 @@ function toggleLeftDrawer() {
 
 function toggleDark(){
   Dark.toggle()
+}
+
+async function logout  () {
+  loading.value = true;
+  try{
+    const response = await authStore.logout();
+    console.log(response);
+    router.push('/auth/login')
+  }
+  catch (e){
+    console.log(e)
+  }
+  finally {
+    loading.value = false
+  }
 }
 </script>

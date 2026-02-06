@@ -44,15 +44,15 @@ class UserController extends Controller
 
     private function generateTokenResponse($user){
         //Access token : short lived(15 mins)
-        $accessToken = $user->createToken('access_token', ['*'], now->addMinutes(15))->plainTextToken;
+        $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(15))->plainTextToken;
         
         //Refresh token: long lived (7 days)
         //This is stored in a secure cookie arey
-        $refreshToken = $user->createToken('refresh_token', ['*'] ,now->addDays(7))->plainTextToken;
+        $refreshToken = $user->createToken('refresh_token', ['*'] ,now()->addDays(7))->plainTextToken;
 
         return response()->json([
             'user'=>$user,
-            'accessToken'=>$accessToken,
+            'access_token'=>$accessToken,
         ])->cookie('refresh_token',$refreshToken,10080,null,null,true,true);
         // cookie: name, value, mins, path, domain, secure, httpOnly: meaning refresh token is saved in http secured from the hackers from localStorage.
     }
@@ -67,7 +67,7 @@ class UserController extends Controller
         if(!$token || $token->expires_at->isPast()) return response()->json(['message'=>'Expired'],401);
 
         $user = $token->tokenable;
-        $token->delele();
+        $token->delete();
 
         return $this->generateTokenResponse($user);
     }

@@ -9,7 +9,7 @@ import {useAuthStore} from 'src/stores/authStore'
 // "export default () => {}" function below (which runs individually
 // for each client)
 const api = axios.create({ 
-  baseURL: 'https://localhost:8000',
+  baseURL: 'http://localhost:8000',
   withCredentials:true
 })
 
@@ -19,12 +19,29 @@ api.interceptors.response.use(
     const authStore = useAuthStore();
     const originalRequest = error.config;
 
-    if( error.response.status === 401 && !originalRequest._retry){
-      originalRequest._retry = true;
-      await authStore.refresh();
+    if(!error.response) return Promise.reject(error);
 
-      originalRequest.headers['Authorizatiion'] = `Bearer ${authStore.accessToken}`;
-      return api(originalRequest)
+    const skipUrls = ['/api/refresh', '/api/logout', '/api/me'];
+
+    const shouldSkip = skipUrls.some(url => originalRequest.url?.includes(url));
+
+    // if(originalRequest.url.includes('/api/refresh') || originalRequest.url.includes('/api/logout')){
+    //   return Promise.reject(error);
+    // }
+
+    if( error.response.status === 401 && !originalRequest._retry && !shouldSkip){
+      originalRequest._retry = true;
+      try{
+        await authStore.refresh();
+  
+        originalRequest.headers['Authorization'] = `Bearer ${authStore.accessToken}`;
+        return api(originalRequest)
+      }
+      catch (refreshError){
+        authStore.accessToken = null;
+        authStore.user = null;
+        return Promise.reject(refreshError)
+      }
     }
     return Promise.reject(error)
   }
