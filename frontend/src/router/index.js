@@ -37,27 +37,41 @@ export default defineRouter(function ({ store } ) {
   Router.beforeEach(async (to,from,next)=>{
     const authStore = useAuthStore(store)
 
+    // says is rehydration ie. re-water every time i reload or is necessary
     if (!authStore.isReady) {
       await authStore.init()
     }
 
-    const userRole = authStore.user?.roles?.[0]?.name;
+    const isAuthenticated = !!authStore.accessToken
+    const userRoles = authStore.user?.roles || [];
+    const hasReqRole = to.meta.role 
+      ? userRoles.some(role => role.name === to.meta.role)
+      : true;
 
     const requiresAuth = to.matched.some(record=>record.meta.requiresAuth)
     const isGuestOnly = to.matched.some(record=>record.meta.guestOnly)
 
-    if(requiresAuth && !authStore.accessToken){
-      next('/auth/login')
-    }
-    if(to.meta.role && to.meta.role !== userRole){
+
+    //Bouncer Logic
+
+    //Guest only page but user is authenticated?(redirect to homepage)
+    if(isGuestOnly && isAuthenticated){
       return next('/')
     }
-    else if( isGuestOnly && authStore.accessToken){
-      next('/')
+
+    //requires login but isnt logged in? (require login)
+    if(requiresAuth && !isAuthenticated){
+      return next('/auth/login')
     }
-    else{
-      next();
+
+
+    if(to.meta.role && !hasReqRole){
+      console.warn(`Access denied. ${to.meta.role} is required`);
+      return next('/403');
     }
+
+    return next();
+
   })
 
   return Router
