@@ -9,19 +9,22 @@ const bgImage = computed(()=> {
 </script>
                 
 <template>
-    <q-layout view="lHh Lpr lFf">
-        <q-page-container>
+    <q-layout view="lHh Lpr lFf" >
+        <q-page-container >
             <q-page class="row no-wrap items-stretch">
                 <div class="col-6 image-section">
                     <q-img :src="bgImage" class="full-height" fit="cover"/>
                 </div>
 
-                <div class="col-6 form-section">
-                    <router-view v-slot="{Component}">
+                <div class="col-6 form-section" :class="$q.dark.isActive ? 'bg-dark' : 'bg-white'">
+                    <q-btn>
+                        
+                    </q-btn>
+                    <router-view v-slot="{ Component }">
                         <transition name="fade" mode="out-in">
-                            <component :is="Component"/>
+                            <component :is="Component" :key="$route.fullPath"/>
                         </transition>
-                    </router-view >
+                    </router-view>
                 </div>
             </q-page>
         </q-page-container>
@@ -44,6 +47,5 @@ const bgImage = computed(()=> {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #fff;
 }
 </style>

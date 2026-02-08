@@ -19,14 +19,14 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             const res = await api.post('/api/login', credentials)
             this.handleAuthResponse(res.data);
-            console.log(res);
+            await this.fetchUser();
             return res
         },
 
         async register(credentials) {
             const res = await api.post('/api/register', credentials)
             this.handleAuthResponse(res.data);
-            console.log(res)
+            await this.fetchUser();
             return res
         },
             

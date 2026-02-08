@@ -42,18 +42,20 @@ class UserController extends Controller
         return $this->generateTokenResponse($user);
     }
 
-    private function generateTokenResponse($user){
-        //Access token : short lived(15 mins)
+    private function generateTokenResponse($user)
+    {
+        if ($user->roles()->count() === 0) {
+            $user->assignRole('user');
+        }
+        $user->load('roles', 'permissions');
+
         $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(15))->plainTextToken;
-        
-        //Refresh token: long lived (7 days)
-        //This is stored in a secure cookie arey
-        $refreshToken = $user->createToken('refresh_token', ['*'] ,now()->addDays(7))->plainTextToken;
+        $refreshToken = $user->createToken('refresh_token', ['*'], now()->addDays(7))->plainTextToken;
 
         return response()->json([
-            'user'=>$user,
-            'access_token'=>$accessToken,
-        ])->cookie('refresh_token',$refreshToken,10080,null,null,true,true);
+            'user' => $user,
+            'access_token' => $accessToken,
+        ])->cookie('refresh_token', $refreshToken, 10080, null, null, true, true);
         // cookie: name, value, mins, path, domain, secure, httpOnly: meaning refresh token is saved in http secured from the hackers from localStorage.
     }
 

@@ -49,7 +49,7 @@ const router = useRouter()
 const authStore = useAuthStore();
 const loading = ref(false)
 
-Dark.set(true)
+// Dark.set(true)
 
 const linksList = [
   {
@@ -119,8 +119,8 @@ async function logout  () {
   try{
     const response = await authStore.logout();
     console.log(response);
-    router.push('/auth/login')
     notify.success(response.data.message)
+    window.location.href = window.location.origin + '/#/auth/login'
   }
   catch (e){
     console.log(e)

@@ -91,7 +91,7 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-Dark.set(true)
+// Dark.set(true)
 
 function toggleDark() {
     Dark.toggle()
