@@ -14,7 +14,9 @@ class AdminSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
+
     {
+    $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
         // Create a admin user if not exists.
         $admin = User::firstOrCreate(
             ['email' => 'god@gmail.com'],
@@ -25,6 +27,6 @@ class AdminSeeder extends Seeder
             ]
         );
 
-        $admin->assignRole(Role::findByName('admin','api'));
+        $admin->syncRoles([$adminRole]);
     }
 }

@@ -34,7 +34,9 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const res = await api.get('/api/me')
                 this.user = res.data;
-            } catch {
+                console.log('Full API Response:', res);
+            } catch (error) {
+                console.error('Error fetching user:', error);
                 this.user = null
             }
         },

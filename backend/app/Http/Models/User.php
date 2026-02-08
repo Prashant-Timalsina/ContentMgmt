@@ -14,6 +14,10 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
+    protected $guard_name = 'api';
+
+    protected $visible = ['id', 'name', 'email', 'email_verified_at', 'created_at', 'updated_at', 'roles', 'permissions'];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -34,6 +38,15 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if (!$user->hasAnyRole()) {
+                $user->assignRole('user');
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

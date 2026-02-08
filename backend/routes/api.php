@@ -13,10 +13,18 @@ Route::post('/refresh',[UserController::class,'refresh'])->name('user.refresh');
 //Private(Protected)
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/me', function(Request $request){
-        return $request->user()->load('roles','permissions');
+        $user = $request->user();
+        // Roles safety
+        if ($user->roles()->count() === 0) {
+            $user->assignRole('user');
+        }
+        $user->load('roles', 'permissions');
+        return response()->json($user);
     });
 
     Route::post('/logout',[UserController::class,'logout'])->name('user.logout');
 
     // Route::post('/logoutAll',[UserController::class,'logoutAll'])->name('all.logout');
 });
+
+//Admin Routes

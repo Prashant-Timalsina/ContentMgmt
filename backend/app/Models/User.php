@@ -15,6 +15,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     protected $guard_name = 'api';
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -25,6 +26,8 @@ class User extends Authenticatable
         'email',
         'password',
     ];
+
+    protected $visible = ['id','name','email','roles','permissions'];
 
     /**
      * The attributes that should be hidden for serialization.

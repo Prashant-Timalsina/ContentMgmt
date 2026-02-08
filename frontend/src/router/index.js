@@ -34,14 +34,23 @@ export default defineRouter(function ({ store } ) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
-  Router.beforeEach((to,from,next)=>{
+  Router.beforeEach(async (to,from,next)=>{
     const authStore = useAuthStore(store)
+
+    if (!authStore.isReady) {
+      await authStore.init()
+    }
+
+    const userRole = authStore.user?.roles?.[0]?.name;
 
     const requiresAuth = to.matched.some(record=>record.meta.requiresAuth)
     const isGuestOnly = to.matched.some(record=>record.meta.guestOnly)
 
     if(requiresAuth && !authStore.accessToken){
       next('/auth/login')
+    }
+    if(to.meta.role && to.meta.role !== userRole){
+      return next('/')
     }
     else if( isGuestOnly && authStore.accessToken){
       next('/')

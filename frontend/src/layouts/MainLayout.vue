@@ -6,6 +6,15 @@
 
         <q-toolbar-title> News Heram </q-toolbar-title>
 
+        <q-item v-if="isAdmin" clickable v-ripple class="bg-grey-9 text-white q-ms-sm rounded-borders" @click="routeToAdmin">
+          <q-item-section avatar>
+            <q-icon name="admin_panel_settings" color="accent"/>
+          </q-item-section>
+          <q-item-section>
+            Admin Panel
+          </q-item-section>
+        </q-item>
+
         <div>
           <q-btn :color="$q.dark.isActive ? 'negative' : 'red'" class="q-mx-sm" @click="logout" label="logout"/>
         </div>
@@ -28,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { Dark } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
@@ -39,6 +48,8 @@ const notify = useQuasaMsgs();
 const router = useRouter()
 const authStore = useAuthStore();
 const loading = ref(false)
+
+Dark.set(true)
 
 const linksList = [
   {
@@ -95,6 +106,14 @@ function toggleDark(){
   Dark.toggle()
 }
 
+const isAdmin = computed(()=> {
+  return authStore.user?.roles?.some(role => role.name === 'admin')
+})
+
+function routeToAdmin() {
+  router.push('/admin')
+}
+
 async function logout  () {
   loading.value = true;
   try{
@@ -110,4 +129,5 @@ async function logout  () {
     loading.value = false
   }
 }
+
 </script>
