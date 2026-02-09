@@ -267,7 +267,7 @@ const blockUser = (user) => {
     persistent: true,
   }).onOk(() => {
     // $q.notify({ message: 'User Blocked', color: 'negative', icon: 'lock' })
-    notify.negative('User Blocked', { icon: 'lock' })
+    notify.error('User Blocked', { icon: 'lock' })
   })
 }
 </script>
