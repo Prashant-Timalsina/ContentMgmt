@@ -113,7 +113,7 @@ const adminLinks = [
   {
     title: 'Permissions',
     icon: 'lock_person',
-    to: '/login',
+    to: '/',
   },
 ]
 
