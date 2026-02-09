@@ -3,24 +3,35 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/HomePage.vue'),meta: {requiresAuth: true} }
+      { path: '', component: () => import('pages/HomePage.vue'), meta: { requiresAuth: true } },
     ],
   },
   {
-    path:'/auth',
+    path: '/auth',
     component: () => import('layouts/AuthLayout.vue'),
-    children:[
-      { path: 'login', name: 'login', component: () => import('pages/LoginPage.vue'),meta: {guestOnly: true}},
-      { path:'signup', name:'signup', component: () => import('pages/SignUpPage.vue'),meta: {guestOnly: true}}
-    ]
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('pages/LoginPage.vue'),
+        meta: { guestOnly: true },
+      },
+      {
+        path: 'signup',
+        name: 'signup',
+        component: () => import('pages/SignUpPage.vue'),
+        meta: { guestOnly: true },
+      },
+    ],
   },
   {
-    path:'/admin',
+    path: '/admin',
     component: () => import('layouts/AdminLayout.vue'),
-    meta: {requiresAuth: true, role: 'admin'},
+    meta: { requiresAuth: true, role: 'admin' },
     children: [
-      { path: '',name:'dashboard', component: ()=> import('pages/admin/AdminDashboard.vue') }
-    ]
+      { path: '', name: 'dashboard', component: () => import('pages/admin/AdminDashboard.vue') },
+      { path: '/listall', name: 'listAll', component: () => import('pages/admin/ListUsers.vue') },
+    ],
   },
 
   // Always leave this as last one,
