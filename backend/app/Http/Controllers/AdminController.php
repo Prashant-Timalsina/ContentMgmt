@@ -13,48 +13,49 @@ class AdminController extends Controller
     public function index()
     {
         //
-        User::all();
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return User::with(['roles','permissions'])
+        ->select('id','name','email')
+        ->get();
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function updateRole(Request $request, User $user)
     {
         //
+        $request->validate([
+            'role' => 'required|exists:roles,name'
+        ]);
+
+        // dude u aint allowed to demote yourself
+        if($request->user()->id === $user->id){
+            return response()->json([
+                'message'=> 'You cannot change your own role brah'
+            ],401);
+        }
+
+        $user->syncRoles([$request->role]);
+
+        return response()->json([
+            'message' => 'Role updated Successfully'
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
+    public function updatePermissions(Request $request, User $user)
     {
-        //
+        $request->validate([
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,name'
+        ]);
+    
+        $user->syncPermissions($request->permissions ?? []);
+    
+        return response()->json([
+            'message' => 'Permissions updated successfully'
+        ]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        //
-    }
+    
 
     /**
      * Remove the specified resource from storage.

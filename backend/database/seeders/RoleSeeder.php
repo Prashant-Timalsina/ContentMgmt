@@ -20,7 +20,7 @@ class RoleSeeder extends Seeder
 
         //Create Permissions if not exists
 
-        $permissions = ['create articles','edit articles','view articles','delete articles'];
+        $permissions = ['create_articles','edit_articles','view_articles','delete_articles','publish_articles','manage_users'];
 
         foreach ($permissions as $permyKun) {
             Permission::firstOrCreate(
@@ -48,8 +48,8 @@ class RoleSeeder extends Seeder
         );
         
         $admin->syncPermissions(Permission::all());
-        $editor->syncPermissions(['edit articles','create articles','view articles']);
-        $user->syncPermissions(['view articles']);
+        $editor->syncPermissions(['create_articles','edit_articles','view_articles','delete_articles']);
+        $user->syncPermissions(['view_articles']);
         
     }
 }

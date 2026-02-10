@@ -103,4 +103,15 @@ class UserController extends Controller
             'message'=>'Logged out'
         ],200)->withoutCookie('refresh_token');
     }
+    
+    public function me(Request $request)
+    {
+        $user = $request->user();
+        
+        return response()->json([
+            'user' => $user,
+            'roles' => $user->roles->pluck('name'),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+        ]);
+    }
 }
