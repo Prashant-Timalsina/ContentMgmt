@@ -3,24 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\AccessRequest;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         //
-        return User::with(['roles','permissions'])
-        ->select('id','name','email')
+        return User::select('id','name','email')
+        ->with(['roles','permissions'])
+        ->withCount(['accessRequests as pending' => function ($query){
+            $query->where('status','pending');
+        }])
         ->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function updateRole(Request $request, User $user)
     {
         //
@@ -57,11 +56,19 @@ class AdminController extends Controller
     }
     
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+    public function approveRequest($id)
+{
+        $req = AccessRequest::with('user')->findOrFail($id);
+        
+        if ($req->type === 'role') {
+            // Assign the whole role
+            $req->user->assignRole($req->item_name);
+        } else {
+            // Give just the specific permission
+            $req->user->givePermissionTo($req->item_name);
+        }
+
+        $req->update(['status' => 'approved']);
+        return response()->json(['message' => "Successfully granted {$req->item_name}"]);
     }
 }

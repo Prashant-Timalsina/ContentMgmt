@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             [
             'name' => 'Test User',
             'password' => Hash::make('Test@123'),
-            'emaail_verified_at' => now(),
+            'email_verified_at' => now(),
         ]);
     }
 }

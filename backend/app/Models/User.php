@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+use App\Models\AccessRequests;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -27,7 +29,19 @@ class User extends Authenticatable
         'password',
     ];
 
-    protected $visible = ['id','name','email'];
+     /**
+     * The attributes that should be shown for serialization.
+     *
+     * @var list<string>
+     */
+    protected $visible = [
+        'id',
+        'name',
+        'email',
+        'roles',
+        'permissions'
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -36,8 +50,6 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'roles',
-        'permissions'
     ];
 
     /**
@@ -51,6 +63,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function accessRequests()
+    {
+        return $this->hasMany(AccessRequest::class);
+    }
+
+    public function getPendingCountAttribute()
+    {
+        return $this->accessRequests()->where('status','pending')->count();
     }
 
     protected static function booted()
