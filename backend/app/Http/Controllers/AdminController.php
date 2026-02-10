@@ -55,20 +55,4 @@ class AdminController extends Controller
         ]);
     }
     
-
-    public function approveRequest($id)
-{
-        $req = AccessRequest::with('user')->findOrFail($id);
-        
-        if ($req->type === 'role') {
-            // Assign the whole role
-            $req->user->assignRole($req->item_name);
-        } else {
-            // Give just the specific permission
-            $req->user->givePermissionTo($req->item_name);
-        }
-
-        $req->update(['status' => 'approved']);
-        return response()->json(['message' => "Successfully granted {$req->item_name}"]);
-    }
 }
