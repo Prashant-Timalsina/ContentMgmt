@@ -6,7 +6,7 @@ import {
   createWebHashHistory,
 } from 'vue-router'
 import routes from './routes'
-import { useAuthStore } from 'src/stores/authStore.js' 
+import { useAuthStore } from 'src/stores/authStore.js'
 
 /*
  * If not building with SSR mode, you can
@@ -17,7 +17,7 @@ import { useAuthStore } from 'src/stores/authStore.js'
  * with the Router instance.
  */
 
-export default defineRouter(function ({ store } ) {
+export default defineRouter(function ({ store }) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === 'history'
@@ -34,7 +34,7 @@ export default defineRouter(function ({ store } ) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
-  Router.beforeEach(async (to,from,next)=>{
+  Router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore(store)
 
     // says is rehydration ie. re-water every time i reload or is necessary
@@ -43,35 +43,40 @@ export default defineRouter(function ({ store } ) {
     }
 
     const isAuthenticated = !!authStore.accessToken
-    const userRoles = authStore.user?.roles || [];
-    const hasReqRole = to.meta.role 
-      ? userRoles.some(role => role.name === to.meta.role)
-      : true;
+    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+    const isGuestOnly = to.matched.some((record) => record.meta.guestOnly)
 
-    const requiresAuth = to.matched.some(record=>record.meta.requiresAuth)
-    const isGuestOnly = to.matched.some(record=>record.meta.guestOnly)
+    const userRoles = authStore.roles || []
+    const hasReqRole = to.meta.role ? userRoles.includes(to.meta.role) : true
 
+    const userPermissions = authStore.permissions || []
+    const hasReqPermission = to.meta.permission
+      ? userPermissions.includes(to.meta.permission)
+      : true
 
     //Bouncer Logic
 
     //Guest only page but user is authenticated?(redirect to homepage)
-    if(isGuestOnly && isAuthenticated){
+    if (isGuestOnly && isAuthenticated) {
       return next('/')
     }
 
     //requires login but isnt logged in? (require login)
-    if(requiresAuth && !isAuthenticated){
+    if (requiresAuth && !isAuthenticated) {
       return next('/auth/login')
     }
 
-
-    if(to.meta.role && !hasReqRole){
-      console.warn(`Access denied. ${to.meta.role} is required`);
-      return next('/403');
+    if (to.meta.role && !hasReqRole) {
+      console.warn(`Access denied. Role ${to.meta.role} required`)
+      return next('/403')
     }
 
-    return next();
+    if (to.meta.permission && !hasReqPermission) {
+      console.warn(`Access denied. Permission ${to.meta.permission} required`)
+      return next('/403')
+    }
 
+    return next()
   })
 
   return Router

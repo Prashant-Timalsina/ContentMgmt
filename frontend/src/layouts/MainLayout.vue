@@ -1,33 +1,98 @@
 <template>
-  <q-layout view="hHh Lpr fFf">
-    <q-header :elevated="!$q.dark.isActive" :class="$q.dark.isActive ? 'bg-dark' : 'bg-primary'">
+  <q-layout view="lHh Lpr lFf" :class="LayoutClass">
+    <q-header
+      :elevated="!$q.dark.isActive"
+      :class="$q.dark.isActive ? 'bg-dark' : 'bg-white text-primary'"
+    >
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> News Heram </q-toolbar-title>
+        <q-toolbar-title class="text-weight-bolder"> KONTENT </q-toolbar-title>
 
-        <q-item v-if="isAdmin" clickable v-ripple class="bg-grey-9 text-white q-ms-sm rounded-borders" @click="routeToAdmin">
+        <q-item
+          v-if="isAdmin"
+          clickable
+          v-ripple
+          class="bg-grey-9 text-white q-ms-sm rounded-borders"
+          @click="routeToAdmin"
+        >
           <q-item-section avatar>
-            <q-icon name="admin_panel_settings" color="accent"/>
+            <q-icon name="admin_panel_settings" color="accent" />
           </q-item-section>
-          <q-item-section>
-            Admin Panel
-          </q-item-section>
+          <q-item-section> Admin Panel </q-item-section>
         </q-item>
 
         <div>
-          <q-btn :color="$q.dark.isActive ? 'negative' : 'red'" class="q-mx-sm" @click="logout" label="logout"/>
+          <q-btn
+            :color="$q.dark.isActive ? 'negative' : 'red'"
+            class="q-mx-sm"
+            @click="logout"
+            label="logout"
+          />
         </div>
-        <q-btn flat  dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleDark"/>
+        <q-btn
+          flat
+          dense
+          round
+          :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
+          @click="toggleDark"
+        />
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header> Menu </q-item-label>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      show-if-above
+      bordered
+      :class="$q.dark.isActive ? 'bg-black' : 'bg-grey-1'"
+      :width="260"
+    >
+      <div class="column full-height">
+        <div class="q-pa-lg text-center">
+          <q-avatar size="60px" color="primary" text-color="white" icon="admin_panel_settings" />
+          <div class="q-mt-md text-weight-bold text-uppercase">Management</div>
+        </div>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
-      </q-list>
+        <q-list padding class="col scroll">
+          <q-item
+            v-for="link in linksList"
+            :key="link.title"
+            clickable
+            v-ripple
+            :to="link.to"
+            exact
+            active-class="active-link"
+            class="q-ma-sm rounded-borders text-weight-medium"
+            :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-8'"
+          >
+            <q-item-section avatar>
+              <q-icon :name="link.icon" />
+            </q-item-section>
+            <q-item-section>{{ link.title }}</q-item-section>
+          </q-item>
+        </q-list>
+
+        <q-separator :dark="$q.dark.isActive" />
+
+        <div class="q-pa-sm">
+          <q-item class="q-px-sm">
+            <q-item-section avatar>
+              <q-avatar size="32px" color="primary" text-color="white">A</q-avatar>
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label class="text-caption text-weight-bold">Admin User</q-item-label>
+              <q-item-label caption class="ellipsis">admin@kontent.com</q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-btn flat round dense color="grey-8" icon="logout" @click="logout">
+                <q-tooltip>Log out</q-tooltip>
+              </q-btn>
+            </q-item-section>
+          </q-item>
+        </div>
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -38,61 +103,41 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
-import { Dark } from 'quasar'
+import { Dark, useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
-import { useRouter } from 'vue-router';
-import { useQuasaMsgs } from 'src/helper/quasaDialogs';
+import { useRouter } from 'vue-router'
+import { useQuasaMsgs } from 'src/helper/quasaDialogs'
 
-const notify = useQuasaMsgs();
+const notify = useQuasaMsgs()
 const router = useRouter()
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 const loading = ref(false)
-
+const $q = useQuasar()
+const LayoutClass = computed(() => {
+  return $q.dark.isActive ? 'bg-dark text-white' : 'bg-grey-2 text-dark'
+})
 // Dark.set(true)
 
 const linksList = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
+    title: 'News',
+    icon: 'book',
+    to: '/',
   },
   {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
+    title: 'Pages',
+    icon: 'pages',
+    to: '/',
   },
   {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
+    title: 'Menu',
+    icon: 'menu',
+    to: '/',
   },
   {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
+    title: 'Settings',
+    icon: 'settings',
+    to: '/',
   },
 ]
 
@@ -102,32 +147,29 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-function toggleDark(){
+function toggleDark() {
   Dark.toggle()
 }
 
-const isAdmin = computed(()=> {
-  return authStore.user?.roles?.some(role => role.name === 'admin')
+const isAdmin = computed(() => {
+  return authStore.user?.roles?.some((role) => role.name === 'admin')
 })
 
 function routeToAdmin() {
   router.push('/admin')
 }
 
-async function logout  () {
-  loading.value = true;
-  try{
-    const response = await authStore.logout();
-    console.log(response);
+async function logout() {
+  loading.value = true
+  try {
+    const response = await authStore.logout()
+    console.log(response)
     notify.success(response.data.message)
     window.location.href = window.location.origin + '/#/auth/login'
-  }
-  catch (e){
+  } catch (e) {
     console.log(e)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
-
 </script>
