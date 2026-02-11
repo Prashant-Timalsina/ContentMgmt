@@ -77,12 +77,14 @@
         <div class="q-pa-sm">
           <q-item class="q-px-sm">
             <q-item-section avatar>
-              <q-avatar size="32px" color="primary" text-color="white">A</q-avatar>
+              <q-avatar size="32px" color="primary" text-color="white">{{
+                user.name?.[0]?.toUpperCase() || ''
+              }}</q-avatar>
             </q-item-section>
 
             <q-item-section>
-              <q-item-label class="text-caption text-weight-bold">Admin User</q-item-label>
-              <q-item-label caption class="ellipsis">admin@kontent.com</q-item-label>
+              <q-item-label class="text-caption text-weight-bold">{{ user.name }}</q-item-label>
+              <q-item-label caption class="ellipsis">{{ user.email }}</q-item-label>
             </q-item-section>
 
             <q-item-section side>
@@ -117,6 +119,8 @@ const LayoutClass = computed(() => {
   return $q.dark.isActive ? 'bg-dark text-white' : 'bg-grey-2 text-dark'
 })
 // Dark.set(true)
+
+const user = authStore.user
 
 const linksList = [
   {
