@@ -13,23 +13,27 @@
           v-if="isAdmin"
           clickable
           v-ripple
-          class="bg-grey-9 text-white q-ms-sm rounded-borders"
+          class="q-ml-sm row items-center"
           @click="routeToAdmin"
         >
-          <q-item-section avatar>
-            <q-icon name="admin_panel_settings" color="accent" />
-          </q-item-section>
-          <q-item-section> Admin Panel </q-item-section>
+          <q-icon
+            name="admin_panel_settings"
+            :color="$q.dark.isActive ? 'purple-3' : 'purple-7'"
+            size="25px"
+          />
+
+          <div class="text-weight-medium q-ma-none" style="margin-left: 2px">Admin</div>
         </q-item>
 
         <div>
           <q-btn
-            :color="$q.dark.isActive ? 'negative' : 'red'"
+            :color="$q.dark.isActive ? 'red-4' : 'red-6'"
             class="q-mx-sm"
             @click="logout"
-            label="logout"
+            label="Logout"
           />
         </div>
+
         <q-btn
           flat
           dense
