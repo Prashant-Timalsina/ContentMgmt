@@ -1,12 +1,11 @@
 <template>
   <div class="q-pa-md">
     <q-table
-      title="User Management"
-      :rows="filterAndSort"
+      :rows="usersToDisplay"
       :columns="columns"
+      row-key="id"
       v-model:pagination="pagination"
       hide-bottom
-      row-key="id"
       flat
       bordered
       :visible-columns="visibleColumns"
@@ -16,11 +15,11 @@
       table-header-class="text-uppercase"
       class="user-table"
     >
-      <template v-slot:top-left>
+      <template #top-left>
         <div class="text-h6 text-weight-bold">User Management</div>
       </template>
 
-      <template v-slot:top-right>
+      <template #top-right>
         <div class="row q-gutter-sm items-center">
           <q-select
             v-model="visibleColumns"
@@ -33,12 +32,15 @@
             map-options
             :options="columns"
             option-value="name"
-            options-cover
             style="min-width: 120px"
           />
+
           <q-input outlined dense debounce="300" v-model="search" placeholder="Name or email..">
-            <template v-slot:append><q-icon name="search" /></template>
+            <template #append>
+              <q-icon name="search" />
+            </template>
           </q-input>
+
           <q-btn
             color="primary"
             icon="filter_list"
@@ -52,7 +54,8 @@
         </div>
       </template>
 
-      <template v-slot:body-cell-role="props">
+      <!-- ROLE COLUMN -->
+      <template #body-cell-role="props">
         <q-td :props="props">
           <q-select
             :model-value="props.row.role"
@@ -68,15 +71,15 @@
             style="width: 120px; margin: 0 auto"
             @update:model-value="(val) => updateRole(props.row, val)"
           >
-            <template v-slot:selected-item="scope">
+            <template #selected-item="scope">
               <div class="full-width text-center">
                 <span :class="getRoleColor(scope.opt)">
-                  {{ scope.opt ? scope.opt.toUpperCase() : '' }}
+                  {{ scope.opt?.toUpperCase() }}
                 </span>
               </div>
             </template>
 
-            <template v-slot:option="scope">
+            <template #option="scope">
               <q-item
                 v-bind="scope.itemProps"
                 class="text-center"
@@ -84,7 +87,7 @@
               >
                 <q-item-section>
                   <q-item-label :class="getRoleColor(scope.opt)">
-                    {{ scope.opt ? scope.opt.toUpperCase() : '' }}
+                    {{ scope.opt?.toUpperCase() }}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -93,7 +96,8 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-permissions="props">
+      <!-- PERMISSIONS COLUMN -->
+      <template #body-cell-permissions="props">
         <q-td :props="props">
           <div class="row no-wrap items-center q-gutter-xs justify-center">
             <div class="row q-gutter-xs">
@@ -107,6 +111,7 @@
                 {{ perm }}
               </q-chip>
             </div>
+
             <q-btn
               flat
               round
@@ -122,7 +127,8 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-actions="props">
+      <!-- ACTIONS COLUMN -->
+      <template #body-cell-actions="props">
         <q-td :props="props" class="q-gutter-x-sm text-center">
           <q-btn flat round icon="warning" color="warning" size="sm" @click="warnUser(props.row)">
             <q-tooltip>Warn User</q-tooltip>
@@ -134,6 +140,7 @@
       </template>
     </q-table>
 
+    <!-- FILTER DIALOG -->
     <q-dialog v-model="filterDialogOpen" position="right">
       <q-card style="width: 350px; height: 100vh" class="column">
         <q-card-section class="row items-center q-pb-none">
@@ -149,6 +156,7 @@
             <div class="text-caption text-weight-bold q-mb-xs">BY ROLE</div>
             <q-select v-model="filter.role" :options="['All', ...roleOptions]" outlined dense />
           </div>
+
           <div>
             <div class="text-caption text-weight-bold q-mb-xs">BY PERMISSIONS</div>
             <q-select
@@ -158,9 +166,9 @@
               outlined
               dense
               use-chips
-              placeholder="Has all selected"
             />
           </div>
+
           <div>
             <div class="text-caption text-weight-bold q-mb-xs">SORT PENDING REQUESTS</div>
             <q-btn-toggle
@@ -168,8 +176,6 @@
               spread
               no-caps
               toggle-color="primary"
-              color="white"
-              text-color="black"
               :options="[
                 { label: 'Highest First', value: 'desc' },
                 { label: 'Lowest First', value: 'asc' },
@@ -179,14 +185,19 @@
         </q-card-section>
 
         <q-separator />
+
         <q-card-actions align="right" class="q-pa-md">
-          <q-btn flat label="Reset All" color="negative" @click="resetFilters" />
+          <q-btn flat label="Reset Filters" color="negative" @click="resetFilters" />
           <q-btn unelevated label="Apply" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <div class="fixed-bottom flex justify-center q-pb-lg pointer-none z-top">
+    <!-- FLOATING PAGINATION -->
+    <div
+      v-if="!filterDialogOpen"
+      class="fixed-bottom flex justify-center q-pb-lg pointer-none z-top"
+    >
       <q-card
         bordered
         class="floating-pagination row items-center no-wrap q-px-md q-py-xs pointer-all shadow-10"
@@ -199,16 +210,18 @@
           :disable="pagination.page === 1"
           @click="pagination.page--"
         />
+
         <div class="q-px-md text-weight-bold">
           PAGE {{ pagination.page }} /
-          {{ Math.max(1, Math.ceil(filterAndSort.length / pagination.rowsPerPage)) }}
+          {{ totalPages }}
         </div>
+
         <q-btn
           flat
           round
           dense
           icon="chevron_right"
-          :disable="pagination.page >= Math.ceil(filterAndSort.length / pagination.rowsPerPage)"
+          :disable="pagination.page >= totalPages"
           @click="pagination.page++"
         />
       </q-card>
@@ -218,17 +231,21 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
+import { api } from 'src/boot/axios'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
-import { computed, ref } from 'vue'
+import { useAuthStore } from 'src/stores/authStore'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const $q = useQuasar()
 const notify = useQuasaMsgs()
+const authStore = useAuthStore()
 
-// States
+onMounted(() => authStore.fetchUsers())
+
 const search = ref('')
-const roleOptions = ['editor', 'user']
+const roleOptions = ['admin', 'editor', 'user']
 const visibleColumns = ref(['id', 'name', 'email', 'role', 'pending', 'permissions', 'actions'])
-const pagination = ref({ sortBy: 'desc', descending: false, page: 1, rowsPerPage: 15 })
+const pagination = ref({ page: 1, rowsPerPage: 15 })
 const allAvailablePermissions = ['view content', 'edit content', 'delete content']
 
 const filterDialogOpen = ref(false)
@@ -239,63 +256,27 @@ const filter = ref({
 })
 
 const columns = [
-  { name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true },
-  { name: 'name', label: 'Full Name', field: 'name', align: 'left', sortable: true },
+  { name: 'id', label: 'ID', field: 'id', align: 'left' },
+  { name: 'name', label: 'Full Name', field: 'name', align: 'left' },
   { name: 'email', label: 'Email', field: 'email', align: 'left' },
   { name: 'role', label: 'Role', field: 'role', align: 'center' },
-  { name: 'pending', label: 'Pending Requests', field: 'pending', align: 'center', sortable: true },
+  { name: 'pending', label: 'Pending Requests', field: 'pending', align: 'center' },
   { name: 'permissions', label: 'Permissions', field: 'permissions', align: 'center' },
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
 
-const rows = ref([
-  {
-    id: 1,
-    name: 'God',
-    email: 'god@gmail.com',
-    role: 'admin',
-    pending: 0,
-    permissions: ['view content'],
-  },
-  {
-    id: 2,
-    name: 'Prashant',
-    email: 'prashant@example.com',
-    role: 'editor',
-    pending: 3,
-    permissions: ['view content', 'edit content'],
-  },
-  {
-    id: 3,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'user',
-    pending: 1,
-    permissions: ['view content'],
-  },
-  {
-    id: 4,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'editor',
-    pending: 0,
-    permissions: ['edit content'],
-  },
-  {
-    id: 5,
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    role: 'user',
-    pending: 5,
-    permissions: ['view content'],
-  },
-])
+const mappedUsers = computed(() =>
+  (authStore.users ?? []).map((user) => ({
+    ...user,
+    role: user.roles?.[0]?.name ?? 'user',
+    permissions: user.permissions?.map((p) => p.name ?? p) ?? [],
+    pending: user.pending ?? 0,
+  })),
+)
 
-// Filter Logic Pipeline
 const filterAndSort = computed(() => {
-  let result = [...rows.value]
+  let result = [...mappedUsers.value]
 
-  // 1. Global Search
   if (search.value) {
     const s = search.value.toLowerCase()
     result = result.filter(
@@ -303,61 +284,72 @@ const filterAndSort = computed(() => {
     )
   }
 
-  // 2. Role Filter
   if (filter.value.role !== 'All') {
     result = result.filter((r) => r.role === filter.value.role)
   }
 
-  // 3. Permission Filter (Must have ALL selected)
-  if (filter.value.permissions.length > 0) {
-    result = result.filter((r) => {
-      // FIX: Added return statement here
-      return filter.value.permissions.every((p) => r.permissions.includes(p))
-    })
+  if (filter.value.permissions.length) {
+    result = result.filter((r) => filter.value.permissions.every((p) => r.permissions.includes(p)))
   }
 
-  // 4. Sorting logic
-  result.sort((a, b) => {
-    return filter.value.sortPending === 'desc' ? b.pending - a.pending : a.pending - b.pending
-  })
+  result.sort((a, b) =>
+    filter.value.sortPending === 'desc' ? b.pending - a.pending : a.pending - b.pending,
+  )
 
   return result
 })
 
 const activeFilterCount = computed(() => {
   let count = 0
+
   if (filter.value.role !== 'All') count++
   if (filter.value.permissions.length > 0) count++
+  if (filter.value.sortPending !== 'desc') count++
+
   return count
 })
 
 const resetFilters = () => {
-  filter.value = {
-    role: 'All',
-    permissions: [],
-    sortPending: 'desc',
-  }
+  filter.value.role = 'All'
+  filter.value.permissions = []
+  filter.value.sortPending = 'desc'
+
+  search.value = ''
+  pagination.value.page = 1
 }
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filterAndSort.value.length / pagination.value.rowsPerPage)),
+)
+
+const usersToDisplay = computed(() => {
+  const start = (pagination.value.page - 1) * pagination.value.rowsPerPage
+  return filterAndSort.value.slice(start, start + pagination.value.rowsPerPage)
+})
+
+watch(
+  [search, filter],
+  () => {
+    pagination.value.page = 1
+  },
+  { deep: true },
+)
 
 const getRoleColor = (role) => {
-  const isDark = $q.dark.isActive
-  if (role === 'admin') return isDark ? 'text-red-4' : 'text-negative'
-  if (role === 'editor') return isDark ? 'text-orange-4' : 'text-orange-9'
-  return isDark ? 'text-blue-4' : 'text-primary'
+  if (role === 'admin') return $q.dark.isActive ? 'text-red-4' : 'text-negative'
+  if (role === 'editor') return $q.dark.isActive ? 'text-orange-4' : 'text-orange-9'
+  return $q.dark.isActive ? 'text-blue-4' : 'text-primary'
 }
 
-const updateRole = (row, newRole) => {
-  if (row.role === newRole) return
-  $q.dialog({
-    title: 'Confirm Role Change',
-    message: `Change ${row.name}'s role to ${newRole.toUpperCase()}?`,
-    ok: { label: 'Update', color: 'positive', flat: true },
-    cancel: { label: 'Cancel', color: 'grey', flat: true },
-    persistent: true,
-  }).onOk(() => {
-    row.role = newRole
-    notify.success(`User ${row.name} updated to ${newRole}`)
-  })
+const updateRole = async (user, newRole) => {
+  if (user.role === newRole) return
+  try {
+    await api.post(`/api/${user.id}/roles`, { role: newRole })
+    await authStore.fetchUsers()
+    notify.success(`Updated ${user.name} to ${newRole}`)
+  } catch {
+    notify.error('Failed to update role')
+  }
 }
 
 const warnUser = (user) => {
@@ -365,10 +357,7 @@ const warnUser = (user) => {
     title: 'Send Warning',
     message: `Send a formal warning to ${user.name}?`,
     cancel: true,
-    persistent: true,
-  }).onOk(() => {
-    notify.warning('Warning Sent')
-  })
+  }).onOk(() => notify.warning('Warning Sent'))
 }
 
 const blockUser = (user) => {
@@ -377,15 +366,12 @@ const blockUser = (user) => {
     message: `Confirm blocking ${user.name}?`,
     ok: { label: 'Block', color: 'negative' },
     cancel: true,
-  }).onOk(() => {
-    notify.error('User Blocked', { icon: 'lock' })
-  })
+  }).onOk(() => notify.error('User Blocked', { icon: 'lock' }))
 }
 
 const addPermission = (user) => {
   $q.dialog({
     title: 'Add Permission',
-    message: `Add new permission for ${user.name}`,
     prompt: { model: '', type: 'text' },
     cancel: true,
   }).onOk((data) => {
@@ -396,28 +382,3 @@ const addPermission = (user) => {
   })
 }
 </script>
-
-<style scoped>
-.user-table {
-  padding-bottom: 100px;
-}
-
-.floating-pagination {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 50px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.body--dark .floating-pagination {
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.pointer-none {
-  pointer-events: none;
-}
-.pointer-all {
-  pointer-events: all;
-}
-</style>

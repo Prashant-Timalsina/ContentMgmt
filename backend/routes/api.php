@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AccessRequestController;
+use App\Http\Controllers\Admin\PermissionController;
 
 // Public : Not protected by token, just cookie
 Route::post('/login',[UserController::class,'login'])->name('user.login');
@@ -29,6 +30,7 @@ Route::middleware(['auth:sanctum','can:manage_users'])
         Route::get('/users', [AdminController::class, 'index'])->name('admin.index');
         Route::patch('/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.updateRole');
         Route::patch('/users/{user}/permissions', [AdminController::class, 'updatePermissions'])->name('admin.updatePermissions');
+        Route::get('/permissions',[PermissionController::class,'index']);
     });
 
 

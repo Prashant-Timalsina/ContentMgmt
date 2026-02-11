@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
     permissions: [],
     accessToken: null,
     isReady: false,
+    users: [],
   }),
   actions: {
     handleAuthResponse(data) {
@@ -38,10 +39,20 @@ export const useAuthStore = defineStore('auth', {
         this.user = res.data.user
         this.roles = res.data.roles
         this.permissions = res.data.permissions
-        console.log('Full API Response:', res)
+        // console.log('Full API Response:', res)
       } catch (error) {
         console.error('Error fetching user:', error)
         this.user = null
+      }
+    },
+
+    async fetchUsers() {
+      try {
+        const res = await api.get('/api/admin/users')
+        this.users = res.data
+        console.log('List of users:', res.data)
+      } catch (error) {
+        console.log(error)
       }
     },
 
@@ -62,6 +73,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await this.refresh()
         await this.fetchUser()
+        await this.fetchUsers()
       } catch {
         this.user = null
         this.accessToken = null

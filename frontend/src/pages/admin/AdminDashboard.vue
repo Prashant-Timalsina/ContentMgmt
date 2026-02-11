@@ -46,7 +46,7 @@
     <div class="q-mt-xl">
       <q-table
         title="User Management"
-        :rows="rows"
+        :rows="users"
         :columns="columns"
         row-key="id"
         flat
@@ -148,6 +148,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
+import { useAuthStore } from 'src/stores/authStore'
 import { computed, ref } from 'vue'
 
 const $q = useQuasar()
@@ -205,38 +206,42 @@ const columns = computed(() => [
   },
 ])
 
-const rows = ref([
-  {
-    id: 1,
-    name: 'God',
-    email: 'god@gmail.com',
-    role: 'admin',
-  },
-  {
-    id: 2,
-    name: 'Prashant',
-    email: 'prashant@example.com',
-    role: 'editor',
-  },
-  {
-    id: 3,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'user',
-  },
-  {
-    id: 4,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'editor',
-  },
-  {
-    id: 5,
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    role: 'user',
-  },
-])
+const authStore = useAuthStore()
+
+const users = authStore.users
+
+// const rows = ref([
+//   {
+//     id: 1,
+//     name: 'God',
+//     email: 'god@gmail.com',
+//     role: 'admin',
+//   },
+//   {
+//     id: 2,
+//     name: 'Prashant',
+//     email: 'prashant@example.com',
+//     role: 'editor',
+//   },
+//   {
+//     id: 3,
+//     name: 'John Doe',
+//     email: 'john@example.com',
+//     role: 'user',
+//   },
+//   {
+//     id: 4,
+//     name: 'Jane Smith',
+//     email: 'jane@example.com',
+//     role: 'editor',
+//   },
+//   {
+//     id: 5,
+//     name: 'Alice Johnson',
+//     email: 'alice@example.com',
+//     role: 'user',
+//   },
+// ])
 
 // Action Handlers
 const updateRole = (userId, newRole) => {
