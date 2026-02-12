@@ -25,7 +25,7 @@ return new class extends Migration
 
             //Status OverFlow
             $table->enum('status',['draft','submitted','reviewed','published'])->default('draft');
-            $table->timestamp('sumbitted_at')->nullable();
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->text('rejection_reason')->nullable();
 
