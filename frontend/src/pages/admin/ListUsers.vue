@@ -62,8 +62,6 @@
             :options="roleOptions"
             dense
             borderless
-            emit-value
-            map-options
             options-dense
             :bg-color="$q.dark.isActive ? 'grey-10' : 'grey-2'"
             class="q-px-sm rounded-borders text-weight-bold"
@@ -78,20 +76,6 @@
                 </span>
               </div>
             </template>
-
-            <template #option="scope">
-              <q-item
-                v-bind="scope.itemProps"
-                class="text-center"
-                :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-white text-black'"
-              >
-                <q-item-section>
-                  <q-item-label :class="getRoleColor(scope.opt)">
-                    {{ scope.opt?.toUpperCase() }}
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
           </q-select>
         </q-td>
       </template>
@@ -99,19 +83,26 @@
       <!-- PERMISSIONS COLUMN -->
       <template #body-cell-permissions="props">
         <q-td :props="props">
-          <div class="row no-wrap items-center q-gutter-xs justify-center">
-            <div class="row q-gutter-xs">
-              <q-chip
-                v-for="(perm, index) in props.value"
-                :key="index"
-                dense
-                size="sm"
-                :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-teal-1 text-teal-10'"
-              >
-                {{ perm }}
-              </q-chip>
-            </div>
+          <div class="row items-center justify-center q-gutter-xs">
+            <!-- Permission Chips -->
+            <q-chip
+              dense
+              size="sm"
+              :class="$q.dark.isActive ? 'bg-grey-9 text-white' : 'bg-teal-1 text-teal-10'"
+            >
+              {{ props.row.role }} Roles
+            </q-chip>
+            <q-chip
+              v-for="perm in props.row.permissions"
+              :key="perm"
+              dense
+              size="sm"
+              :class="$q.dark.isActive ? 'bg-grey-9 text-white' : 'bg-teal-1 text-teal-10'"
+            >
+              {{ perm }}
+            </q-chip>
 
+            <!-- Add Button -->
             <q-btn
               flat
               round
@@ -119,9 +110,9 @@
               size="sm"
               icon="add"
               color="primary"
-              @click="addPermission(props.row)"
+              @click="openPermissionDialog(props.row)"
             >
-              <q-tooltip>Add Permission</q-tooltip>
+              <q-tooltip>Edit Permissions</q-tooltip>
             </q-btn>
           </div>
         </q-td>
@@ -193,6 +184,30 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="permissionDialog">
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">Manage Permissions - {{ selectedUser?.name }}</div>
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-select
+            v-model="selectedPermissions"
+            multiple
+            use-chips
+            :options="allAvailablePermissions"
+            outlined
+            dense
+          />
+        </q-card-section>
+        <q-separator />
+        <q-card-actions>
+          <q-btn flat label="cancel" v-close-popup />
+          <q-btn unelevated color="primary" label="Save" @click="savePermissions" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- FLOATING PAGINATION -->
     <div
       v-if="!filterDialogOpen"
@@ -240,13 +255,27 @@ const $q = useQuasar()
 const notify = useQuasaMsgs()
 const authStore = useAuthStore()
 
-onMounted(() => authStore.fetchUsers())
+onMounted(() => {
+  authStore.fetchUsers()
+  authStore.loadRoles()
+  authStore.loadPermissions()
+})
+
+/* -------------------- STATE -------------------- */
+const selectedUser = ref(null)
+
+const permissionDialog = ref(false)
+const selectedPermissions = ref([])
 
 const search = ref('')
-const roleOptions = ['admin', 'editor', 'user']
 const visibleColumns = ref(['id', 'name', 'email', 'role', 'pending', 'permissions', 'actions'])
 const pagination = ref({ page: 1, rowsPerPage: 15 })
-const allAvailablePermissions = ['view content', 'edit content', 'delete content']
+
+const roleOptions = computed(() => (authStore.role ?? []).map((r) => r.name ?? r))
+
+const allAvailablePermissions = computed(() =>
+  (authStore.permissions ?? []).map((p) => p.name ?? p),
+)
 
 const filterDialogOpen = ref(false)
 const filter = ref({
@@ -254,6 +283,16 @@ const filter = ref({
   permissions: [],
   sortPending: 'desc',
 })
+
+watch(
+  () => authStore.roles,
+  (val) => {
+    console.log('Roles:', val)
+  },
+  { immediate: true },
+)
+
+/* -------------------- TABLE -------------------- */
 
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
@@ -301,11 +340,9 @@ const filterAndSort = computed(() => {
 
 const activeFilterCount = computed(() => {
   let count = 0
-
   if (filter.value.role !== 'All') count++
   if (filter.value.permissions.length > 0) count++
   if (filter.value.sortPending !== 'desc') count++
-
   return count
 })
 
@@ -313,7 +350,6 @@ const resetFilters = () => {
   filter.value.role = 'All'
   filter.value.permissions = []
   filter.value.sortPending = 'desc'
-
   search.value = ''
   pagination.value.page = 1
 }
@@ -335,22 +371,59 @@ watch(
   { deep: true },
 )
 
+/* -------------------- HELPERS -------------------- */
+
+const refetchUsers = async () => {
+  await authStore.fetchUsers()
+}
+
 const getRoleColor = (role) => {
   if (role === 'admin') return $q.dark.isActive ? 'text-red-4' : 'text-negative'
   if (role === 'editor') return $q.dark.isActive ? 'text-orange-4' : 'text-orange-9'
   return $q.dark.isActive ? 'text-blue-4' : 'text-primary'
 }
 
+/* -------------------- ROLE UPDATE -------------------- */
+
 const updateRole = async (user, newRole) => {
   if (user.role === newRole) return
+
   try {
-    await api.post(`/api/${user.id}/roles`, { role: newRole })
-    await authStore.fetchUsers()
+    await api.patch(`/api/admin/users/${user.id}/role`, {
+      role: newRole,
+    })
     notify.success(`Updated ${user.name} to ${newRole}`)
+    await refetchUsers()
   } catch {
     notify.error('Failed to update role')
   }
 }
+
+/* -------------------- PERMISSION UPDATE -------------------- */
+
+const openPermissionDialog = (user) => {
+  selectedUser.value = user
+  selectedPermissions.value = [...user.permissions]
+  permissionDialog.value = true
+}
+
+const savePermissions = async () => {
+  if (!selectedUser.value) return
+
+  try {
+    await api.patch(`/api/admin/users/${selectedUser.value.id}/permissions`, {
+      permissions: selectedPermissions.value,
+    })
+
+    notify.success('Permissions updated successfully')
+    permissionDialog.value = false
+    await authStore.fetchUsers()
+  } catch {
+    notify.error('Failed to update Permissions')
+  }
+}
+
+/* -------------------- ACTIONS -------------------- */
 
 const warnUser = (user) => {
   $q.dialog({
@@ -367,18 +440,5 @@ const blockUser = (user) => {
     ok: { label: 'Block', color: 'negative' },
     cancel: true,
   }).onOk(() => notify.error('User Blocked', { icon: 'lock' }))
-}
-
-const addPermission = (user) => {
-  $q.dialog({
-    title: 'Add Permission',
-    prompt: { model: '', type: 'text' },
-    cancel: true,
-  }).onOk((data) => {
-    if (data) {
-      user.permissions.push(data)
-      notify.success('Permission Added')
-    }
-  })
 }
 </script>

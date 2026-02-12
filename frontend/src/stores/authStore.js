@@ -5,6 +5,8 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     roles: [],
+    permission: [],
+    role: [],
     permissions: [],
     accessToken: null,
     isReady: false,
@@ -15,8 +17,20 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = data.access_token
       this.user = data.user
       this.roles = data.roles
-      this.permissions = data.permissions
+      this.permission = data.permissions
       api.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`
+    },
+
+    async loadRoles() {
+      const res = await api.get('/api/admin/roles')
+      this.role = res.data
+      console.log('Roles are:', res.data)
+    },
+
+    async loadPermissions() {
+      const res = await api.get('/api/admin/permissions')
+      this.permissions = res.data
+      console.log('Permissions are:', res.data)
     },
 
     async login(credentials) {
@@ -38,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
         const res = await api.get('/api/me')
         this.user = res.data.user
         this.roles = res.data.roles
-        this.permissions = res.data.permissions
+        this.permission = res.data.permissions
         // console.log('Full API Response:', res)
       } catch (error) {
         console.error('Error fetching user:', error)
