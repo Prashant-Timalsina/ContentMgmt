@@ -2,6 +2,7 @@
   <div class="q-ma-lg">
     <div class="text-h5 q-mb-md text-weight-bold">Admin Overview</div>
 
+    <!-- Stats Cards -->
     <div class="q-col-gutter-md row">
       <div v-for="stat in stats" :key="stat.label" class="col-12 col-sm-4">
         <q-card
@@ -43,10 +44,12 @@
         </q-card>
       </div>
     </div>
+
+    <!-- Users Table -->
     <div class="q-mt-xl">
       <q-table
         title="User Management"
-        :rows="users"
+        :rows="mappedUsers"
         :columns="columns"
         row-key="id"
         flat
@@ -62,81 +65,57 @@
         </template>
 
         <template v-slot:top-right>
-          <q-input borderless dense debounce="300" placeholder="Search Users">
+          <q-input borderless dense debounce="300" placeholder="Search Users" v-model="search">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
         </template>
 
-        <template v-slot:body-cell-role="props">
-          <q-td :props="props">
-            <q-select
-              v-model="props.row.role"
-              :options="roleOptions"
-              dense
-              borderless
-              emit-value
-              map-options
-              options-dense
-              :bg-color="$q.dark.isActive ? 'grey-10' : 'grey-2'"
-              class="q-px-sm rounded-borders text-weight-bold"
-              popup-content-class="text-center"
-              style="width: 120px; margin: 0 auto"
-              @update:model-value="(val) => updateRole(props.row.id, val)"
-            >
-              <template v-slot:selected-item="scope">
-                <div class="full-width text-center">
-                  <span :class="getRoleColor(scope.opt)">
-                    {{ scope.opt ? scope.opt.toUpperCase() : '' }}
-                  </span>
-                </div>
-              </template>
-
-              <template v-slot:option="scope">
-                <q-item
-                  v-bind="scope.itemProps"
-                  class="text-center"
-                  :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-white text-black'"
-                >
-                  <q-item-section>
-                    <q-item-label :class="getRoleColor(scope.opt)">
-                      {{ scope.opt ? scope.opt.toUpperCase() : '' }}
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+        <!-- ROLE COLUMN -->
+        <template #body-cell-role="props">
+          <q-td :props="props" class="text-center text-weight-bold">
+            <span :class="getRoleColor(props.row.role)">
+              {{ props.row.role.toUpperCase() }}
+            </span>
           </q-td>
         </template>
 
-        <template v-slot:option="scope">
-          <q-item v-bind="scope.itemProps" class="text-center">
-            <q-item-section>
-              <q-item-label :class="getRoleColor(scope.opt)">
-                {{ scope.opt.toUpperCase() }}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
+        <!-- PERMISSIONS COLUMN -->
+        <template #body-cell-permission="props">
+          <q-td :props="props" class="text-center">
+            <div class="row justify-center q-gutter-xs">
+              <q-chip
+                dense
+                size="sm"
+                :class="$q.dark.isActive ? 'bg-grey-9 text-white' : 'bg-teal-1 text-teal-10'"
+              >
+                {{ props.row.role }} role
+              </q-chip>
+              ,
+              <q-chip
+                v-for="perm in props.row.permissions"
+                :key="perm"
+                dense
+                size="sm"
+                :class="$q.dark.isActive ? 'bg-grey-9 text-white' : 'bg-teal-1 text-teal-10'"
+              >
+                {{ perm }}
+              </q-chip>
+            </div>
+          </q-td>
         </template>
 
+        <!-- ACTIONS COLUMN -->
         <template v-slot:body-cell-actions="props">
-          <q-td :props="props" class="q-gutter-x-sm">
+          <q-td :props="props" class="q-gutter-x-sm text-center">
             <q-btn
               flat
-              label="Warn"
-              icon="warning"
-              color="warning"
+              label="Edit"
+              icon="edit"
+              color="primary"
               size="sm"
-              @click="warnUser(props.row)"
-            />
-            <q-btn
-              unelevated
-              label="Block"
-              icon="block"
-              color="negative"
-              size="sm"
-              @click="blockUser(props.row)"
+              @click="$router.push({ name: 'listAll', query: { userId: props.row.id } })"
             />
           </q-td>
         </template>
@@ -147,22 +126,13 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useQuasaMsgs } from 'src/helper/quasaDialogs'
 import { useAuthStore } from 'src/stores/authStore'
 import { computed, ref } from 'vue'
 
 const $q = useQuasar()
-const notify = useQuasaMsgs()
-const roleOptions = ['admin', 'editor', 'user']
+const authStore = useAuthStore()
 
-// Style texts in dropdowns
-const getRoleColor = (role) => {
-  const isDark = $q.dark.isActive
-
-  if (role === 'admin') return isDark ? 'text-red-4' : 'text-negative'
-  if (role === 'editor') return isDark ? 'text-orange-4' : 'text-orange-9'
-  return isDark ? 'text-blue-4' : 'text-primary'
-}
+const search = ref('')
 
 const stats = ref([
   { label: 'Total Users', value: 10, icon: 'people', color: 'primary' },
@@ -179,101 +149,26 @@ const columns = computed(() => [
     sortable: true,
     classes: 'text-weight-bold',
   },
-  {
-    name: 'name',
-    label: 'Full Name',
-    field: 'name',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'email',
-    label: 'Email Address',
-    field: 'email',
-    align: 'left',
-  },
-  {
-    name: 'role',
-    label: 'Role',
-    field: 'role',
-    align: 'center',
-  },
-  {
-    name: 'actions',
-    label: 'Actions',
-    field: 'actions',
-    align: 'center',
-  },
+  { name: 'name', label: 'Full Name', field: 'name', align: 'left', sortable: true },
+  { name: 'email', label: 'Email Address', field: 'email', align: 'left' },
+  { name: 'role', label: 'Role', field: 'role', align: 'center' },
+  { name: 'permission', label: 'Permission', field: 'permission', align: 'center' },
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'center' },
 ])
 
-const authStore = useAuthStore()
+const mappedUsers = computed(() =>
+  (authStore.users ?? []).map((user) => ({
+    ...user,
+    role: user.roles?.[0]?.name ?? 'user',
+    permissions: user.permissions?.map((p) => p.name ?? p) ?? [],
+  })),
+)
 
-const users = authStore.users
-
-// const rows = ref([
-//   {
-//     id: 1,
-//     name: 'God',
-//     email: 'god@gmail.com',
-//     role: 'admin',
-//   },
-//   {
-//     id: 2,
-//     name: 'Prashant',
-//     email: 'prashant@example.com',
-//     role: 'editor',
-//   },
-//   {
-//     id: 3,
-//     name: 'John Doe',
-//     email: 'john@example.com',
-//     role: 'user',
-//   },
-//   {
-//     id: 4,
-//     name: 'Jane Smith',
-//     email: 'jane@example.com',
-//     role: 'editor',
-//   },
-//   {
-//     id: 5,
-//     name: 'Alice Johnson',
-//     email: 'alice@example.com',
-//     role: 'user',
-//   },
-// ])
-
-// Action Handlers
-const updateRole = (userId, newRole) => {
-  $q.notify({
-    message: `User ${userId} promoted to ${newRole}`,
-    color: 'positive',
-    icon: 'done',
-  })
-}
-
-const warnUser = (user) => {
-  $q.dialog({
-    title: 'Send Warning',
-    message: `Are you sure you want to send a formal warning to ${user.name}?`,
-    cancel: true,
-    persistent: true,
-  }).onOk(() => {
-    notify.warning('Warned User')
-  })
-}
-
-const blockUser = (user) => {
-  $q.dialog({
-    title: 'Block User',
-    message: `This will prevent ${user.name} from logging in. Continue?`,
-    ok: { label: 'Block', color: 'negative' },
-    cancel: true,
-    persistent: true,
-  }).onOk(() => {
-    // $q.notify({ message: 'User Blocked', color: 'negative', icon: 'lock' })
-    notify.error('User Blocked', { icon: 'lock' })
-  })
+const getRoleColor = (role) => {
+  const isDark = $q.dark.isActive
+  if (role === 'admin') return isDark ? 'text-red-4' : 'text-negative'
+  if (role === 'editor') return isDark ? 'text-orange-4' : 'text-orange-9'
+  return isDark ? 'text-blue-4' : 'text-primary'
 }
 </script>
 
