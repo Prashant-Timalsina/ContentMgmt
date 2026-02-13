@@ -4,27 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Content;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ContentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+    // List all articles (role-based visibility)
     public function index(Request $request)
     {
+        $this->authorize('viewAny',Content::class);
         //
-        return Content::where('author_id',$request->user()->id)
-        ->with('type')->latest()->get();
+        $user = $request->user();
+
+        // For admins, all articles are available in all states(i wanted draft to be excluded.)
+        if($user->can('publish_articles')){
+            return Content::with('type','author')->latest()->get();
+        }
+
+        // For editors, editor's own articles
+        return Content::where('author_id',$user->id)
+            ->with('type')->latest()->get();
+    }
+
+    //Every User can see the published articles
+    public function showAll(){
+        return Content::where('status','published')
+            ->with(['author','type'])
+            ->latest('published_at')
+            ->get();
     }
 
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // A draft article
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', Content::class);
+
+        $validated = $request->validate([
+            'title'=> 'required|string',
+            'body' => 'required|string',
+            'type_id'=>'required|exists:article_types,id',
+        ]);
+
+        $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        $validated['author_id'] = $request->user()->id;
+        $validated['status'] = Content::STATUS_DRAFT;
+
+        $article = Content::create($validated);
+
+        return response()->json($article,201);
     }
+
 
     /**
      * Display the specified resource.
@@ -32,14 +62,9 @@ class ContentController extends Controller
     public function show(Content $content)
     {
         //
-    }
+        $this->authorize('view', $content);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Content $content)
-    {
-        //
+        return $content->load('type','author');
     }
 
     /**
@@ -47,14 +72,59 @@ class ContentController extends Controller
      */
     public function update(Request $request, Content $content)
     {
-        //
+        $this->authorize('update', $content);
+
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string',
+            'body' => 'sometimes|string',
+            'type_id' => 'sometimes|exists:article_types,id'
+        ]);
+
+        if(isset($validated['title'])){
+            $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        }
+
+        $content->update($validated);
+
+        return response()->json($content);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
+    // Delete the articles
     public function destroy(Content $content)
     {
-        //
+        $this->authorize('delete', $content);
+
+        $content->delete();
+
+        return response()->json(['message' => 'Deleted Successfully']);
     }
+
+
+    public function submit(Content $content)
+    {
+         $this->authorize('submit', $content);
+
+        $content->update([
+            'status'=>Content::STATUS_SUBMITTED,
+            'submitted_at'=>now()
+        ]);
+
+        return response()->json(['message'=>'Submitted for review']);
+    }
+
+
+    public function publish(Content $content){
+        $this->authorize('publish', $content);
+
+        $content->update([
+            'status'=>Content::STATUS_PUBLISHED,
+            'published_at'=>now()
+        ]);
+        return response()->json([
+            'message'=>'Published successfully'
+        ]);
+    }
+
 }
