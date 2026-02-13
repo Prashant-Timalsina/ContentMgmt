@@ -27,6 +27,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             \Database\Seeders\AdminSeeder::class,
         ]);
+
+        // Articles Seeder
+        $this->call([
+            \Database\Seeders\ArticleTypeSeeder::class,
+        ]);
         
         User::firstOrCreate(
             ['email' => 'test@example.com'],
