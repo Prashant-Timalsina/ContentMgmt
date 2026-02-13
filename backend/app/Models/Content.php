@@ -14,7 +14,7 @@ class Content extends Model
 
     const STATUS_DRAFT = 'draft';
     const STATUS_SUBMITTED = 'submitted';
-    const STATUS_REVIEWED = 'reviewed';
+    const STATUS_REJECTED = 'rejected';
     const STATUS_PUBLISHED = 'published';
 
     protected $fillable = [
@@ -52,7 +52,7 @@ class Content extends Model
         return [
             self::STATUS_DRAFT,
             self::STATUS_SUBMITTED ,
-            self::STATUS_REVIEWED ,
+            self::STATUS_REJECTED ,
             self::STATUS_PUBLISHED ,
         ];
     }
