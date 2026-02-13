@@ -64,11 +64,12 @@ Route::middleware(['auth:sanctum'])->group(function(){
 *---------------------------------------------------------|
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+// Public published articles (no authentication required)
+Route::get('/articles',[ContentController::class,'showAll']);
+Route::get('/articles/{content}',[ContentController::class,'show']);
 
-    // Public published articles
-    Route::get('/articles',[ContentController::class,'showAll']);
-    Route::get('/articles/{content}',[ContentController::class,'show']);
+// Protected routes (authentication required)
+Route::middleware('auth:sanctum')->group(function () {
 
     // Editor/Admin personal articles
     Route::get('/my-articles',[ContentController::class,'index'])

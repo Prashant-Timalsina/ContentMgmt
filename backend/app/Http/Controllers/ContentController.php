@@ -59,10 +59,16 @@ class ContentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Content $content)
+    public function show(Request $request, Content $content)
     {
-        //
-        $this->authorize('view', $content);
+        // Allow public access to published articles, require auth for others
+        if ($content->status !== Content::STATUS_PUBLISHED) {
+            // For non-published articles, user must be authenticated
+            if (!$request->user()) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+            $this->authorize('view', $content);
+        }
 
         return $content->load('type','author');
     }

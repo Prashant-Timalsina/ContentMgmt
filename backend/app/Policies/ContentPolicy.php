@@ -17,10 +17,16 @@ class ContentPolicy
     /**
      * View single article
      */
-    public function view(User $user, Content $content)
+    public function view(?User $user, Content $content)
     {
+        // Published articles are viewable by anyone (including guests)
         if ($content->status === Content::STATUS_PUBLISHED) {
             return true;
+        }
+
+        // For non-published articles, user must be authenticated
+        if (!$user) {
+            return false;
         }
 
         return $user->id === $content->author_id

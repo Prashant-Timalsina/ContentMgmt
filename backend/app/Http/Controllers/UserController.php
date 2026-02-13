@@ -17,11 +17,12 @@ class UserController extends Controller
             'password'=>'required|min:8'
         ]);
 
-        if(!Auth::guard('web')->attempt($request->only('email','password'))){
+        // Authenticate user directly without session guard for API
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json(['message'=>'Invalid Credentials'],401);
         }
-
-        $user = Auth::guard('web')->user();
 
         return $this->generateTokenResponse($user);
     }
@@ -55,6 +56,8 @@ class UserController extends Controller
         return response()->json([
             'user' => $user,
             'access_token' => $accessToken,
+            'roles' => $user->roles->pluck('name'),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
         ])->cookie('refresh_token', $refreshToken, 10080, null, null, true, true);
         // cookie: name, value, mins, path, domain, secure, httpOnly: meaning refresh token is saved in http secured from the hackers from localStorage.
     }
@@ -113,5 +116,20 @@ class UserController extends Controller
             'roles' => $user->roles->pluck('name'),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
+    }
+
+    public function requestUpdate(Request $request)
+    {
+        $data = $request->validate([
+            'type' => 'required|in:role,permission',
+            'item_name' => 'required|string',
+            'reason' => 'nullable|string'
+        ]);
+
+        $accessRequest = $request->user()->accessRequests()->create($data);
+        return response()->json([
+            'message'=>'Request submitted for review',
+            'data'=> $accessRequest
+        ],201);
     }
 }
