@@ -250,7 +250,6 @@ const toggleDark = () => {
   Dark.toggle()
 }
 
-// Add this to your computed section
 const userInitial = computed(() => {
   return user.value?.name?.charAt(0).toUpperCase() || 'U'
 })
