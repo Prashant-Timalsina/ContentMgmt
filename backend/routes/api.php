@@ -24,7 +24,6 @@ Route::post('/refresh',[UserController::class,'refresh'])->name('user.refresh');
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/me',[UserController::class,'me'])->name('user.me');
     Route::post('/logout',[UserController::class,'logout'])->name('user.logout');
-    Route::post('/up_req',[UserController::class,'requestUpdate'])->name('user.requestUpdate');
     // Route::post('/logoutAll',[UserController::class,'logoutAll'])->name('all.logout');
 });
     

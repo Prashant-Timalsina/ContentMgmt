@@ -118,18 +118,4 @@ class UserController extends Controller
         ]);
     }
 
-    public function requestUpdate(Request $request)
-    {
-        $data = $request->validate([
-            'type' => 'required|in:role,permission',
-            'item_name' => 'required|string',
-            'reason' => 'nullable|string'
-        ]);
-
-        $accessRequest = $request->user()->accessRequests()->create($data);
-        return response()->json([
-            'message'=>'Request submitted for review',
-            'data'=> $accessRequest
-        ],201);
-    }
 }
