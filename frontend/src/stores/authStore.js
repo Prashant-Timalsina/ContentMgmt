@@ -87,7 +87,9 @@ export const useAuthStore = defineStore('auth', {
       try {
         await this.refresh()
         await this.fetchUser()
-        await this.fetchUsers()
+        if (this.permission?.includes('manage_users')) {
+          await this.fetchUsers()
+        }
       } catch {
         this.user = null
         this.accessToken = null

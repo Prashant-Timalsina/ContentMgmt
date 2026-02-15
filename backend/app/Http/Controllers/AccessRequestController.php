@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\DB;
 class AccessRequestController extends Controller
 {
     /**
+     * List all access requests (admin only).
+     */
+    public function index()
+    {
+        return \App\Models\AccessRequest::with('user:id,name,email')
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    /**
      * Store a newly created request from a User.
      */
     public function requestUpdate(Request $request)

@@ -100,21 +100,9 @@ const LayoutClass = computed(() => {
 })
 
 const adminLinks = [
-  {
-    title: 'Dashboard',
-    icon: 'grid_view',
-    to: '/admin',
-  },
-  {
-    title: 'Users',
-    icon: 'group',
-    to: '/listall',
-  },
-  {
-    title: 'Permissions',
-    icon: 'lock_person',
-    to: '/',
-  },
+  { title: 'Dashboard', icon: 'grid_view', to: '/admin' },
+  { title: 'Users', icon: 'group', to: '/listall' },
+  { title: 'Requests', icon: 'pending_actions', to: '/admin/requests' },
 ]
 
 const leftDrawerOpen = ref(false)

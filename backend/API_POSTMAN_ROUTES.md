@@ -385,7 +385,43 @@ Sets status to `published` and `published_at` to current time.
 
 ---
 
-## 5. Quick Postman Setup Tips
+### 4.11 Reject Article (Admin)
+
+- **Method**: `POST`
+- **URL**: `/api/articles/{content}/reject`
+- **Auth**: `Authorization: Bearer <ACCESS_TOKEN>`
+- **Permissions required**: `publish_articles`
+- **Body (JSON)** (optional):
+
+```json
+{
+  "rejection_reason": "Needs more sources"
+}
+```
+
+Sets status to `rejected` and optionally stores `rejection_reason`.
+
+---
+
+## 5. Admin-only routes
+
+### 5.1 List access requests
+
+- **Method**: `GET`
+- **URL**: `/api/admin/access-requests`
+- **Auth**: `Authorization: Bearer <ACCESS_TOKEN>` (with `manage_users`)
+- **Response**: List of all access requests (role/permission) with `user`.
+
+### 5.2 List all articles (admin)
+
+- **Method**: `GET`
+- **URL**: `/api/admin/articles`
+- **Auth**: `Authorization: Bearer <ACCESS_TOKEN>` (with `manage_users`)
+- **Response**: All articles with `type` and `author` (for pending/review list).
+
+---
+
+## 6. Quick Postman Setup Tips
 
 - **Environment variable**:
   - `base_url = http://localhost:8000`

@@ -1,46 +1,23 @@
 <template>
-  <q-layout view="lHh Lpr lFf" :class="LayoutClass">
+  <q-layout view="hHh Lpr lFf" :class="LayoutClass">
     <q-header
       :elevated="!$q.dark.isActive"
       :class="$q.dark.isActive ? 'bg-dark' : 'bg-white text-primary'"
     >
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title class="text-weight-bolder"> KONTENT </q-toolbar-title>
-
-        <q-item
-          v-if="isAdmin"
-          clickable
-          v-ripple
-          class="q-ml-sm row items-center"
-          @click="routeToAdmin"
-        >
-          <q-icon
-            name="admin_panel_settings"
-            :color="$q.dark.isActive ? 'purple-3' : 'purple-7'"
-            size="25px"
-          />
-
-          <div class="text-weight-medium q-ma-none" style="margin-left: 2px">Admin</div>
-        </q-item>
-
-        <div>
-          <q-btn
-            :color="$q.dark.isActive ? 'red-4' : 'red-6'"
-            class="q-mx-sm"
-            @click="logout"
-            label="Logout"
-          />
-        </div>
-
+      <q-toolbar class="q-py-sm">
+        <q-btn flat dense round icon="menu_open" @click="toggleLeftDrawer" />
+        <q-toolbar-title class="text-weight-bolder">
+          KONTENT <span :class="$q.dark.isActive ? 'text-primary' : 'text-dark'">EDITOR</span>
+        </q-toolbar-title>
+        <q-space />
         <q-btn
           flat
-          dense
           round
           :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
           @click="toggleDark"
+          class="q-mr-sm"
         />
+        <q-btn label="Exit" icon-right="home" to="/" />
       </q-toolbar>
     </q-header>
 
@@ -53,13 +30,12 @@
     >
       <div class="column full-height">
         <div class="q-pa-lg text-center">
-          <q-avatar size="60px" color="primary" text-color="white" icon="admin_panel_settings" />
-          <div class="q-mt-md text-weight-bold text-uppercase">Management</div>
+          <q-avatar size="60px" color="orange" text-color="white" icon="edit_note" />
+          <div class="q-mt-md text-weight-bold text-uppercase">Editor</div>
         </div>
-
         <q-list padding class="col scroll">
           <q-item
-            v-for="link in linksList"
+            v-for="link in editorLinks"
             :key="link.title"
             clickable
             v-ripple
@@ -75,22 +51,20 @@
             <q-item-section>{{ link.title }}</q-item-section>
           </q-item>
         </q-list>
-
         <q-separator :dark="$q.dark.isActive" />
-
         <div class="q-pa-sm">
           <q-item class="q-px-sm">
             <q-item-section avatar>
-              <q-avatar size="32px" color="primary" text-color="white">{{
-                user.name?.[0]?.toUpperCase() || ''
-              }}</q-avatar>
+              <q-avatar size="32px" color="primary" text-color="white">
+                {{ authStore.user?.name?.[0]?.toUpperCase() || 'E' }}
+              </q-avatar>
             </q-item-section>
-
             <q-item-section>
-              <q-item-label class="text-caption text-weight-bold">{{ user.name }}</q-item-label>
-              <q-item-label caption class="ellipsis">{{ user.email }}</q-item-label>
+              <q-item-label class="text-caption text-weight-bold">{{
+                authStore.user?.name
+              }}</q-item-label>
+              <q-item-label caption class="ellipsis">{{ authStore.user?.email }}</q-item-label>
             </q-item-section>
-
             <q-item-section side>
               <q-btn flat round dense color="grey-8" icon="logout" @click="logout">
                 <q-tooltip>Log out</q-tooltip>
@@ -111,31 +85,20 @@
 import { computed, ref } from 'vue'
 import { Dark, useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
-import { useRouter } from 'vue-router'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
 
-const notify = useQuasaMsgs()
-const router = useRouter()
 const authStore = useAuthStore()
+const notify = useQuasaMsgs()
 const loading = ref(false)
 const $q = useQuasar()
 const LayoutClass = computed(() => {
   return $q.dark.isActive ? 'bg-dark text-white' : 'bg-grey-2 text-dark'
 })
-// Dark.set(true)
 
-const user = authStore.user
-
-const linksList = computed(() => {
-  const list = [
-    { title: 'Home', icon: 'home', to: '/' },
-    { title: 'My profile', icon: 'person', to: '/user' },
-  ]
-  if (authStore.permission?.includes('create_articles')) {
-    list.push({ title: 'Editor', icon: 'edit_note', to: '/editors/content' })
-  }
-  return list
-})
+const editorLinks = [
+  { title: 'My Content', icon: 'article', to: '/editors/content' },
+  { title: 'New Article', icon: 'add_circle', to: '/editors/create' },
+]
 
 const leftDrawerOpen = ref(false)
 
@@ -147,19 +110,10 @@ function toggleDark() {
   Dark.toggle()
 }
 
-const isAdmin = computed(() => {
-  return authStore.user?.roles?.some((role) => role.name === 'admin')
-})
-
-function routeToAdmin() {
-  router.push('/admin')
-}
-
 async function logout() {
   loading.value = true
   try {
     const response = await authStore.logout()
-    console.log(response)
     notify.success(response.data.message)
     window.location.href = window.location.origin + '/#/auth/login'
   } catch (e) {
@@ -169,3 +123,13 @@ async function logout() {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.rounded-borders {
+  border-radius: 12px;
+}
+.active-link {
+  background: var(--q-primary) !important;
+  color: white !important;
+}
+</style>

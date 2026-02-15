@@ -127,18 +127,24 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
 
 const search = ref('')
 
-const stats = ref([
-  { label: 'Total Users', value: 10, icon: 'people', color: 'primary' },
-  { label: 'Editors', value: 5, icon: 'edit_note', color: 'orange' },
-  { label: 'Admins', value: 1, icon: 'security', color: 'negative' },
-])
+const stats = computed(() => {
+  const users = authStore.users ?? []
+  const total = users.length
+  const editors = users.filter((u) => (u.roles?.[0]?.name ?? u.role) === 'editor').length
+  const admins = users.filter((u) => (u.roles?.[0]?.name ?? u.role) === 'admin').length
+  return [
+    { label: 'Total Users', value: total, icon: 'people', color: 'primary' },
+    { label: 'Editors', value: editors, icon: 'edit_note', color: 'orange' },
+    { label: 'Admins', value: admins, icon: 'security', color: 'negative' },
+  ]
+})
 
 const columns = computed(() => [
   {
@@ -163,6 +169,11 @@ const mappedUsers = computed(() =>
     permissions: user.permissions?.map((p) => p.name ?? p) ?? [],
   })),
 )
+
+// Ensure users are loaded for stats
+onMounted(() => {
+  authStore.fetchUsers()
+})
 
 const getRoleColor = (role) => {
   const isDark = $q.dark.isActive

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Content;
 use App\Models\AccessRequest;
 use Illuminate\Http\Request;
 
@@ -54,5 +55,12 @@ class AdminController extends Controller
             'message' => 'Permissions updated successfully'
         ]);
     }
-    
+
+    /**
+     * List all articles (admin). Used for pending/review list.
+     */
+    public function articles()
+    {
+        return Content::with('type', 'author')->latest()->get();
+    }
 }

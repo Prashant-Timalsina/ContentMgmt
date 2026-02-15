@@ -133,4 +133,19 @@ class ContentController extends Controller
         ]);
     }
 
+    public function reject(Request $request, Content $content)
+    {
+        $this->authorize('reject', $content);
+
+        $validated = $request->validate([
+            'rejection_reason' => 'nullable|string|max:1000',
+        ]);
+
+        $content->update([
+            'status' => Content::STATUS_REJECTED,
+            'rejection_reason' => $validated['rejection_reason'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Article rejected']);
+    }
 }

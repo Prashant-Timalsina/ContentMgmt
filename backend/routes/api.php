@@ -33,6 +33,8 @@ Route::middleware(['auth:sanctum','can:manage_users'])
 ->prefix('admin')
 ->group(function() {
     Route::get('/users', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/access-requests', [AccessRequestController::class, 'index'])->name('admin.accessRequests');
+    Route::get('/articles', [AdminController::class, 'articles'])->name('admin.articles');
     Route::patch('/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.updateRole');
     Route::patch('/users/{user}/permissions', [AdminController::class, 'updatePermissions'])->name('admin.updatePermissions');
     Route::get('/permissions',function () {
@@ -96,5 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Publish (Admin only)
     Route::post('/articles/{content}/publish',[ContentController::class,'publish'])
+        ->middleware('can:publish_articles');
+
+    // Reject (Admin only)
+    Route::post('/articles/{content}/reject',[ContentController::class,'reject'])
         ->middleware('can:publish_articles');
 });

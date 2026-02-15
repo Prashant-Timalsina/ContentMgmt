@@ -74,4 +74,12 @@ class ContentPolicy
     {
         return $user->can('publish_articles');
     }
+
+    /**
+     * Reject article (admin only)
+     */
+    public function reject(User $user, Content $content)
+    {
+        return $user->can('publish_articles');
+    }
 }
