@@ -1,9 +1,16 @@
 <template>
-  <div class="q-pa-md">
-    <q-inner-loading :showing="loading">
+  <q-page class="q-pa-md">
+    <div v-if="loading" class="flex flex-center" style="min-height: 400px">
+      <div class="text-center">
+        <q-spinner-dots color="primary" size="48px" />
+        <div class="text-grey q-mt-md">Loading article details...</div>
+      </div>
+    </div>
+
+    <div v-else-if="article">
       <div class="text-h6 text-weight-bold q-mb-md">Edit Article</div>
 
-      <q-form v-if="article" @submit="onSubmit" class="q-gutter-md">
+      <q-form @submit="onSubmit" class="q-gutter-md">
         <q-input
           v-model="form.title"
           label="Title"
@@ -11,6 +18,7 @@
           dense
           :rules="[(v) => !!v || 'Title is required']"
         />
+
         <q-select
           v-model="form.type_id"
           :options="typeOptions"
@@ -23,11 +31,12 @@
           dense
           :rules="[(v) => !!v || 'Type is required']"
         />
+
         <div class="q-mt-sm">
           <div class="text-caption q-mb-xs">Body</div>
           <div
             :class="$q.dark.isActive ? 'bg-grey-10' : 'bg-white'"
-            class="rounded-borders overflow-hidden"
+            class="rounded-borders overflow-hidden border-container"
           >
             <quill-editor
               v-model:content="form.body"
@@ -38,8 +47,10 @@
             />
           </div>
         </div>
-        <div class="row q-gutter-sm items-center">
+
+        <div class="row q-gutter-sm items-center q-mt-md">
           <q-btn unelevated color="primary" type="submit" label="Save" :loading="saving" />
+
           <q-btn
             v-if="article.status === 'draft'"
             outline
@@ -48,13 +59,18 @@
             :loading="submitting"
             @click="submitForReview"
           />
+
           <q-btn flat label="Back to list" :to="{ name: 'editorsContent' }" />
         </div>
       </q-form>
+    </div>
 
-      <div v-else class="text-center text-grey">Article not found.</div>
-    </q-inner-loading>
-  </div>
+    <div v-else class="text-center text-grey q-py-xl">
+      <q-icon name="error_outline" size="lg" />
+      <div class="text-h6">Article not found.</div>
+      <q-btn flat label="Go Back" :to="{ name: 'editorsContent' }" color="primary" />
+    </div>
+  </q-page>
 </template>
 
 <script setup>
