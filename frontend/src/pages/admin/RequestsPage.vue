@@ -96,11 +96,11 @@
         </template>
     </q-table>
 
-    <!-- Article requests (pending articles) -->
+    <!-- Article requests -->
     <div v-if="filterType === 'all' || filterType === 'article'" class="q-mb-md">
-      <div class="text-subtitle1 text-weight-medium q-mb-sm">Pending articles</div>
+      <div class="text-subtitle1 text-weight-medium q-mb-sm">Article requests</div>
       <q-table
-        :rows="filteredPendingArticles"
+        :rows="filteredArticleRequests"
         :columns="articleColumns"
         row-key="id"
         :loading="loading"
@@ -111,8 +111,21 @@
         "
         row-class="article-pending-row"
       >
-          <template #body-cell-actions="props">
-            <q-td :props="props">
+        <template #body-cell-status="props">
+          <q-td :props="props">
+            <q-chip
+              dense
+              size="sm"
+              :color="articleStatusColor(props.row.status)"
+              text-color="white"
+            >
+              {{ articleStatusLabel(props.row.status) }}
+            </q-chip>
+          </q-td>
+        </template>
+        <template #body-cell-actions="props">
+          <q-td :props="props">
+            <template v-if="props.row.status === 'submitted'">
               <q-btn
                 flat
                 dense
@@ -133,8 +146,10 @@
               >
                 <q-tooltip>Reject</q-tooltip>
               </q-btn>
-            </q-td>
-          </template>
+            </template>
+            <span v-else class="text-grey">—</span>
+          </q-td>
+        </template>
       </q-table>
     </div>
 
@@ -190,7 +205,7 @@ const loading = ref(false)
 const filterType = ref('all')
 const filterStatus = ref('all')
 const accessRequests = ref([])
-const pendingArticles = ref([])
+const articleRequests = ref([])
 const rejectAccessDialog = ref(false)
 const rejectArticleDialog = ref(false)
 const selectedAccessRequest = ref(null)
@@ -212,6 +227,7 @@ const articleColumns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
   { name: 'title', label: 'Title', field: 'title', align: 'left' },
   { name: 'author', label: 'Author', field: (row) => row.author?.name ?? row.author_id, align: 'left' },
+  { name: 'status', label: 'Status', field: 'status', align: 'center' },
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
 
@@ -225,9 +241,11 @@ const filteredAccessRequests = computed(() => {
   return list
 })
 
-const filteredPendingArticles = computed(() => {
-  let list = pendingArticles.value
-  if (filterStatus.value === 'approved' || filterStatus.value === 'rejected') return []
+const filteredArticleRequests = computed(() => {
+  let list = articleRequests.value
+  if (filterStatus.value === 'pending') list = list.filter((a) => a.status === 'submitted')
+  else if (filterStatus.value === 'approved') list = list.filter((a) => a.status === 'published')
+  else if (filterStatus.value === 'rejected') list = list.filter((a) => a.status === 'rejected')
   return list
 })
 
@@ -244,6 +262,16 @@ function statusColor(status) {
   return 'grey'
 }
 
+function articleStatusLabel(status) {
+  const map = { submitted: 'Pending', published: 'Approved', rejected: 'Rejected' }
+  return map[status] ?? status
+}
+
+function articleStatusColor(status) {
+  const map = { submitted: 'orange', published: 'positive', rejected: 'negative' }
+  return map[status] ?? 'grey'
+}
+
 function requestRowClass(row, kind) {
   if (kind === 'access') {
     if (row.type === 'role') return 'request-type-role'
@@ -257,15 +285,17 @@ async function loadAccessRequests() {
   accessRequests.value = res.data
 }
 
-async function loadPendingArticles() {
+async function loadArticleRequests() {
   const res = await api.get('/api/admin/articles')
-  pendingArticles.value = (res.data ?? []).filter((a) => a.status === 'submitted')
+  articleRequests.value = (res.data ?? []).filter(
+    (a) => a.status === 'submitted' || a.status === 'published' || a.status === 'rejected'
+  )
 }
 
 async function load() {
   loading.value = true
   try {
-    await Promise.all([loadAccessRequests(), loadPendingArticles()])
+    await Promise.all([loadAccessRequests(), loadArticleRequests()])
   } catch {
     notify.error('Failed to load requests')
   } finally {
@@ -308,7 +338,7 @@ async function publishArticle(row) {
   try {
     await api.post(`/api/articles/${row.id}/publish`)
     notify.success('Article published')
-    await loadPendingArticles()
+    await loadArticleRequests()
   } catch (e) {
     notify.error(e.response?.data?.message ?? 'Failed to publish')
   }
@@ -329,7 +359,7 @@ async function doRejectArticle() {
     notify.success('Article rejected')
     rejectArticleDialog.value = false
     selectedArticle.value = null
-    await loadPendingArticles()
+    await loadArticleRequests()
   } catch (e) {
     notify.error(e.response?.data?.message ?? 'Failed to reject')
   }
