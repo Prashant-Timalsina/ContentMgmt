@@ -4,40 +4,51 @@
       :elevated="!$q.dark.isActive"
       :class="$q.dark.isActive ? 'bg-dark' : 'bg-white text-primary'"
     >
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title class="text-weight-bolder"> KONTENT </q-toolbar-title>
+      <q-toolbar class="q-py-sm">
+        <q-btn flat dense round icon="menu_open" @click="toggleLeftDrawer" />
 
-        <q-item
-          v-if="isAdmin"
-          clickable
-          v-ripple
-          class="q-ml-sm row items-center rounded-borders"
-          @click="routeToAdmin"
-        >
-          <q-icon
-            name="admin_panel_settings"
-            :color="$q.dark.isActive ? 'purple-3' : 'purple-7'"
-            size="25px"
+        <q-toolbar-title class="text-weight-bolder">
+          <span class="text-uppercase">KONTENT</span>
+          <span
+            v-if="isAdminSection"
+            :class="$q.dark.isActive ? 'text-primary' : 'text-primary'"
+            class="q-ml-sm"
+          >
+            ADMIN
+          </span>
+          <span v-if="isEditorSection" class="text-orange-8 q-ml-sm"> EDITOR </span>
+        </q-toolbar-title>
+
+        <q-space />
+
+        <div class="row items-center q-gutter-md">
+          <q-btn
+            flat
+            round
+            :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
+            @click="toggleDark"
           />
-          <div class="text-weight-medium q-ml-xs">Admin</div>
-        </q-item>
 
-        <q-btn
-          :color="$q.dark.isActive ? 'red-4' : 'red-6'"
-          class="q-mx-sm"
-          @click="logout"
-          label="Logout"
-          flat
-        />
+          <q-btn
+            v-if="isAdminSection || isEditorSection"
+            unelevated
+            color="grey-10"
+            class="rounded-borders text-weight-bold q-px-md"
+            label="EXIT"
+            icon-right="logout"
+            to="/"
+          />
 
-        <q-btn
-          flat
-          dense
-          round
-          :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
-          @click="toggleDark"
-        />
+          <q-btn
+            v-else
+            flat
+            no-caps
+            label="Logout"
+            color="red-5"
+            @click="logout"
+            class="text-weight-bold"
+          />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -50,8 +61,15 @@
     >
       <div class="column full-height">
         <div class="q-pa-lg text-center">
-          <q-avatar size="60px" color="primary" text-color="white" icon="hub" />
-          <div class="q-mt-md text-weight-bold text-uppercase tracking-widest">Kontent Hub</div>
+          <q-avatar
+            size="60px"
+            color="primary"
+            text-color="white"
+            :icon="isAdminSection ? 'admin_panel_settings' : 'hub'"
+          />
+          <div class="q-mt-md text-weight-bold text-uppercase tracking-widest">
+            {{ isAdminSection ? 'Management' : 'Kontent Hub' }}
+          </div>
         </div>
 
         <q-list padding class="col scroll">
@@ -65,7 +83,6 @@
             label="Categories"
             header-class="text-weight-bold"
             class="q-ma-sm rounded-borders overflow-hidden"
-            default-opened
           >
             <q-list class="q-pl-md">
               <q-item
@@ -74,14 +91,11 @@
                 :to="{ name: 'home' }"
                 exact
                 class="q-ma-xs rounded-borders"
-                active-class="active-type"
+                active-class="active-sub"
               >
-                <q-item-section avatar>
-                  <q-icon name="apps" size="18px" color="primary" />
-                </q-item-section>
+                <q-item-section avatar><q-icon name="apps" size="xs" /></q-item-section>
                 <q-item-section>All Articles</q-item-section>
               </q-item>
-
               <q-item
                 v-for="type in articleTypes"
                 :key="type.id"
@@ -89,22 +103,15 @@
                 v-ripple
                 :to="{ name: 'home', query: { type: type.id } }"
                 class="q-ma-xs rounded-borders"
-                active-class="active-type"
+                active-class="active-sub"
               >
-                <q-item-section avatar>
-                  <q-icon name="label_important" size="18px" color="grey-5" />
-                </q-item-section>
+                <q-item-section avatar><q-icon name="label_important" size="xs" /></q-item-section>
                 <q-item-section>{{ type.name }}</q-item-section>
               </q-item>
             </q-list>
           </q-expansion-item>
 
-          <q-separator class="q-my-sm" inset />
-
-          <q-item clickable v-ripple to="/user" exact class="q-ma-sm rounded-borders nav-item">
-            <q-item-section avatar><q-icon name="person" /></q-item-section>
-            <q-item-section>My Profile</q-item-section>
-          </q-item>
+          <q-separator inset class="q-my-sm" />
 
           <q-expansion-item
             v-if="canEdit"
@@ -112,7 +119,7 @@
             label="Editor Workspace"
             header-class="text-weight-bold"
             class="q-ma-sm rounded-borders overflow-hidden"
-            :default-opened="isEditorPath"
+            :default-opened="isEditorSection"
           >
             <q-list class="q-pl-md">
               <q-item
@@ -144,7 +151,7 @@
             label="Management"
             header-class="text-weight-bold"
             class="q-ma-sm rounded-borders overflow-hidden"
-            :default-opened="isAdminPath"
+            :default-opened="isAdminSection"
           >
             <q-list class="q-pl-md">
               <q-item
@@ -154,7 +161,7 @@
                 exact
                 class="q-ma-xs rounded-borders"
               >
-                <q-item-section avatar><q-icon name="dashboard" size="xs" /></q-item-section>
+                <q-item-section avatar><q-icon name="grid_view" size="xs" /></q-item-section>
                 <q-item-section>Dashboard</q-item-section>
               </q-item>
               <q-item
@@ -164,7 +171,7 @@
                 exact
                 class="q-ma-xs rounded-borders"
               >
-                <q-item-section avatar><q-icon name="people" size="xs" /></q-item-section>
+                <q-item-section avatar><q-icon name="group" size="xs" /></q-item-section>
                 <q-item-section>User Directory</q-item-section>
               </q-item>
               <q-item
@@ -187,7 +194,7 @@
           <q-item class="q-px-sm">
             <q-item-section avatar>
               <q-avatar size="32px" color="primary" text-color="white">
-                {{ user.name?.[0]?.toUpperCase() || 'U' }}
+                {{ userInitial }}
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -203,15 +210,7 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view v-slot="{ Component }">
-        <transition
-          enter-active-class="animated fadeIn"
-          leave-active-class="animated fadeOut"
-          mode="out-in"
-        >
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
@@ -220,41 +219,41 @@
 import { computed, ref, onMounted } from 'vue'
 import { Dark, useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/authStore'
-import { useContentStore } from 'src/stores/contentStore' // Added this
-import { useRouter, useRoute } from 'vue-router'
+import { useContentStore } from 'src/stores/contentStore'
+import { useRoute } from 'vue-router'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
 
 const notify = useQuasaMsgs()
-const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const contentStore = useContentStore() // Initialize store
+const contentStore = useContentStore()
 const $q = useQuasar()
 
 const leftDrawerOpen = ref(false)
 
 const user = computed(() => authStore.user || {})
 const articleTypes = computed(() => contentStore.articleTypes || [])
+const LayoutClass = computed(() =>
+  $q.dark.isActive ? 'bg-dark text-white' : 'bg-grey-2 text-dark',
+)
 
-const LayoutClass = computed(() => {
-  return $q.dark.isActive ? 'bg-dark text-white' : 'bg-grey-2 text-dark'
-})
-
-const isAdmin = computed(() => authStore.user?.roles?.some((role) => role.name === 'admin'))
+const isAdmin = computed(() => authStore.user?.roles?.some((r) => r.name === 'admin'))
 const canEdit = computed(() => authStore.permission?.includes('create_articles'))
 
-const isEditorPath = computed(() => route.path.startsWith('/editors'))
-const isAdminPath = computed(() => route.path.startsWith('/admin'))
+const isAdminSection = computed(() => route.path.startsWith('/admin'))
+const isEditorSection = computed(() => route.path.startsWith('/editors'))
 
-function toggleLeftDrawer() {
+const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
-function toggleDark() {
+const toggleDark = () => {
   Dark.toggle()
 }
-function routeToAdmin() {
-  router.push('/admin')
-}
+
+// Add this to your computed section
+const userInitial = computed(() => {
+  return user.value?.name?.charAt(0).toUpperCase() || 'U'
+})
 
 async function logout() {
   if ($q.loading) $q.loading.show({ message: 'Logging out...' })
@@ -269,7 +268,6 @@ async function logout() {
   }
 }
 
-// Fetch categories when the layout mounts so they are available immediately
 onMounted(() => {
   contentStore.fetchArticleTypes()
 })
@@ -279,19 +277,23 @@ onMounted(() => {
 .rounded-borders {
   border-radius: 8px;
 }
-.active-type {
-  color: var(--q-primary);
-  background: rgba(var(--q-primary), 0.05);
-  font-weight: 600;
-}
-.q-router-link--exact-active:not(.active-type) {
-  background: rgba(var(--q-primary), 0.1);
-  color: var(--q-primary) !important;
-  font-weight: bold;
-}
 .tracking-widest {
   letter-spacing: 0.1em;
 }
+
+/* Active State for Sub-items */
+.active-sub {
+  color: var(--q-primary);
+  background: rgba(var(--q-primary), 0.1);
+  font-weight: bold;
+}
+
+/* Global Navigation Highlight */
+.q-router-link--exact-active:not(.active-sub) {
+  background: var(--q-primary) !important;
+  color: white !important;
+}
+
 :deep(.q-expansion-item__container .q-item) {
   border-radius: 8px;
 }
