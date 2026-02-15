@@ -29,7 +29,7 @@ class AccessRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        $accessRequest = $request->accessRequests()->create($data);
+        $accessRequest = $request->user()->accessRequests()->create($data);
         return response()->json([
             'message'=>'Request submitted for review',
             'data'=> $accessRequest

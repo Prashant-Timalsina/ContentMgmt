@@ -28,21 +28,21 @@
       />
     </div>
 
-    <q-inner-loading :showing="loading">
-      <!-- Access requests (role + permission) -->
-      <q-table
-        v-if="filterType === 'all' || filterType === 'role' || filterType === 'permission'"
-        :rows="filteredAccessRequests"
-        :columns="accessColumns"
-        row-key="id"
-        flat
-        bordered
-        :card-class="
-          $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
-        "
-        class="q-mb-lg"
-        :row-class="(row) => requestRowClass(row, 'access')"
-      >
+    <!-- Access requests (role + permission) -->
+    <q-table
+      v-if="filterType === 'all' || filterType === 'role' || filterType === 'permission'"
+      :rows="filteredAccessRequests"
+      :columns="accessColumns"
+      row-key="id"
+      :loading="loading"
+      flat
+      bordered
+      :card-class="
+        $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
+      "
+      class="q-mb-lg"
+      :row-class="(row) => requestRowClass(row, 'access')"
+    >
         <template #body-cell-type="props">
           <q-td :props="props">
             <q-chip
@@ -94,22 +94,23 @@
             <span v-else class="text-grey">—</span>
           </q-td>
         </template>
-      </q-table>
+    </q-table>
 
-      <!-- Article requests (pending articles) -->
-      <div v-if="filterType === 'all' || filterType === 'article'" class="q-mb-md">
-        <div class="text-subtitle1 text-weight-medium q-mb-sm">Pending articles</div>
-        <q-table
-          :rows="filteredPendingArticles"
-          :columns="articleColumns"
-          row-key="id"
-          flat
-          bordered
-          :card-class="
-            $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
-          "
-          row-class="article-pending-row"
-        >
+    <!-- Article requests (pending articles) -->
+    <div v-if="filterType === 'all' || filterType === 'article'" class="q-mb-md">
+      <div class="text-subtitle1 text-weight-medium q-mb-sm">Pending articles</div>
+      <q-table
+        :rows="filteredPendingArticles"
+        :columns="articleColumns"
+        row-key="id"
+        :loading="loading"
+        flat
+        bordered
+        :card-class="
+          $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
+        "
+        row-class="article-pending-row"
+      >
           <template #body-cell-actions="props">
             <q-td :props="props">
               <q-btn
@@ -134,9 +135,8 @@
               </q-btn>
             </q-td>
           </template>
-        </q-table>
-      </div>
-    </q-inner-loading>
+      </q-table>
+    </div>
 
     <q-dialog v-model="rejectAccessDialog">
       <q-card style="min-width: 320px">

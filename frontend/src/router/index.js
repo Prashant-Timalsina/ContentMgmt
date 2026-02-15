@@ -49,9 +49,10 @@ export default defineRouter(function ({ store }) {
     const userRoles = authStore.roles || []
     const hasReqRole = to.meta.role ? userRoles.includes(to.meta.role) : true
 
-    const userPermissions = authStore.permissions || []
+    // User's own permissions from /me (store uses 'permission' key)
+    const userPermissions = authStore.permission || []
     const hasReqPermission = to.meta.permission
-      ? userPermissions.includes(to.meta.permission)
+      ? userPermissions.includes(to.meta.permission) || userRoles.includes('admin')
       : true
 
     //Bouncer Logic

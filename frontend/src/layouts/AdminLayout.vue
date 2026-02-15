@@ -101,7 +101,7 @@ const LayoutClass = computed(() => {
 
 const adminLinks = [
   { title: 'Dashboard', icon: 'grid_view', to: '/admin' },
-  { title: 'Users', icon: 'group', to: '/listall' },
+  { title: 'Users', icon: 'group', to: '/admin/listall' },
   { title: 'Requests', icon: 'pending_actions', to: '/admin/requests' },
 ]
 

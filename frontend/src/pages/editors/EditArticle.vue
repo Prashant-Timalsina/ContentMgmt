@@ -63,7 +63,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useContentStore } from 'src/stores/contentStore'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
 import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/snow.css'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 const route = useRoute()
 const router = useRouter()

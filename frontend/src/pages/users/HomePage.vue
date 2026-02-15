@@ -2,41 +2,42 @@
   <q-page class="q-pa-md">
     <div class="text-h6 text-weight-bold q-mb-md">Published content</div>
 
-    <q-inner-loading :showing="loading">
-      <div class="row q-col-gutter-md">
-        <div
-          v-for="article in publishedList"
-          :key="article.id"
-          class="col-12 col-sm-6 col-md-4"
+    <div v-if="loading" class="flex flex-center q-py-xl">
+      <q-spinner-dots color="primary" size="48px" />
+    </div>
+    <div v-else class="row q-col-gutter-md">
+      <div
+        v-for="article in publishedList"
+        :key="article.id"
+        class="col-12 col-sm-6 col-md-4"
+      >
+        <q-card
+          flat
+          bordered
+          clickable
+          :class="$q.dark.isActive ? 'bg-dark border-dark' : 'bg-white border-light'"
+          class="full-height"
+          @click="openArticle(article)"
         >
-          <q-card
-            flat
-            bordered
-            clickable
-            :class="$q.dark.isActive ? 'bg-dark border-dark' : 'bg-white border-light'"
-            class="full-height"
-            @click="openArticle(article)"
-          >
-            <q-card-section>
-              <div class="text-subtitle1 text-weight-medium ellipsis-2-lines">
-                {{ article.title }}
-              </div>
-              <div class="text-caption text-grey q-mt-xs">
-                {{ article.type?.name ?? 'Article' }}
-                <span v-if="article.author"> · {{ article.author.name }}</span>
-              </div>
-              <div
-                class="text-body2 q-mt-sm text-grey-7 ellipsis-3-lines"
-                v-html="stripHtml(article.body)"
-              />
-            </q-card-section>
-          </q-card>
-        </div>
+          <q-card-section>
+            <div class="text-subtitle1 text-weight-medium ellipsis-2-lines">
+              {{ article.title }}
+            </div>
+            <div class="text-caption text-grey q-mt-xs">
+              {{ article.type?.name ?? 'Article' }}
+              <span v-if="article.author"> · {{ article.author.name }}</span>
+            </div>
+            <div
+              class="text-body2 q-mt-sm text-grey-7 ellipsis-3-lines"
+              v-html="stripHtml(article.body)"
+            />
+          </q-card-section>
+        </q-card>
       </div>
-      <div v-if="!loading && !publishedList.length" class="text-center text-grey q-py-xl">
-        No published articles yet.
-      </div>
-    </q-inner-loading>
+    </div>
+    <div v-if="!loading && !publishedList.length" class="text-center text-grey q-py-xl">
+      No published articles yet.
+    </div>
 
     <q-dialog v-model="articleDialog">
       <q-card v-if="selectedArticle" style="min-width: 320px; max-width: 560px">

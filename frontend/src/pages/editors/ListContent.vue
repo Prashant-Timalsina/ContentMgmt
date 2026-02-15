@@ -5,18 +5,18 @@
       <q-btn color="primary" icon="add" label="Create Article" :to="{ name: 'editorsCreate' }" />
     </div>
 
-    <q-inner-loading :showing="loading">
-      <q-table
-        :rows="contentList"
-        :columns="columns"
-        row-key="id"
-        flat
-        bordered
-        :card-class="
-          $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
-        "
-        table-header-class="text-uppercase"
-      >
+    <q-table
+      :rows="contentList"
+      :columns="columns"
+      row-key="id"
+      :loading="loading"
+      flat
+      bordered
+      :card-class="
+        $q.dark.isActive ? 'bg-dark border-dark shadow-2' : 'bg-white shadow-1 border-light'
+      "
+      table-header-class="text-uppercase"
+    >
         <template #body-cell-status="props">
           <q-td :props="props">
             <q-chip
@@ -73,7 +73,6 @@
           </q-td>
         </template>
       </q-table>
-    </q-inner-loading>
 
     <q-dialog v-model="deleteDialog">
       <q-card>
