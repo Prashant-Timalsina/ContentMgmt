@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Content;
+use App\Policies\AdminContentPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -16,23 +17,35 @@ class ContentController extends Controller
         //
         $user = $request->user();
 
-        // For admins, all articles are available in all states(i wanted draft to be excluded.)
-        if($user->can('publish_articles')){
-            return Content::with('type','author')->latest()->get();
-        }
-
         // For editors, editor's own articles
         return Content::where('author_id',$user->id)
             ->with('type')->latest()->get();
     }
 
+    public function ViewAll(Content $content){
+        $this->authorize('viewAny',AdminContentPolicy::class);
+
+        $contents = $content->where('status', '!=', Content::STATUS_DRAFT)
+            ->with('author','type')
+            ->latest('created_at')
+            ->get();
+        return $contents;
+    }
+
+    public function adminView(Content $content){
+        $this->authorize('view', AdminContentPolicy::class);
+
+        return $content->load('type','author');
+    }
+
     //Every User can see the published articles
     public function showAll(){
-        return Content::where('status','published')
+        return Content::where('status',Content::STATUS_PUBLISHED)
             ->with(['author','type'])
             ->latest('published_at')
             ->get();
     }
+
 
 
     // A draft article

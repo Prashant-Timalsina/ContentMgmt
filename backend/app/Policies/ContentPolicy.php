@@ -11,7 +11,7 @@ class ContentPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create_articles');
+        return true;
     }
 
     /**
@@ -29,8 +29,7 @@ class ContentPolicy
             return false;
         }
 
-        return $user->id === $content->author_id
-            || $user->can('publish_articles');
+        return $user->id === $content->author_id;
     }
 
     /**

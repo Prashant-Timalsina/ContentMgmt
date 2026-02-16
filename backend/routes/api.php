@@ -81,6 +81,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-articles',[ContentController::class,'index'])
         ->middleware('can:create_articles');
 
+    Route::get('/all-articles',[ContentController::class,'viewAll'])
+        ->middleware('can:publish_articles');
+    
     // Create
     Route::post('/articles',[ContentController::class,'store'])
         ->middleware('can:create_articles');

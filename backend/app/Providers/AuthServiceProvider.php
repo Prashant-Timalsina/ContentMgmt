@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Gate;
 
 use App\Policies\ContentPolicy;
 use App\Models\Content;
+use App\Policies\AdminContentPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
