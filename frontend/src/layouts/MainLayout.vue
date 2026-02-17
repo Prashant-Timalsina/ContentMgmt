@@ -185,6 +185,11 @@
               </q-item>
             </q-list>
           </q-expansion-item>
+          <q-separator inset class="q-my-sm" />
+          <q-item clickable v-ripple to="/user" exact class="q-ma-xs rounded-border">
+            <q-item-section avatar><q-icon name="person" /></q-item-section>
+            <q-item-section>My Profile</q-item-section>
+          </q-item>
         </q-list>
 
         <q-separator :dark="$q.dark.isActive" />
