@@ -121,7 +121,8 @@ const selectedArticle = ref(null)
 
 // Filtering & Pagination State
 const currentPage = ref(1)
-const rowsPerPage = 6
+const rowsPerPage = 9
+
 const selectedType = ref(0)
 const searchQuery = ref('')
 

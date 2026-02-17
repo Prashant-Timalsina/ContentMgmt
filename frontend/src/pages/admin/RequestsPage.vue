@@ -49,17 +49,26 @@
             outline
             dense
             class="text-body2"
-            :label="typeColor(props.row.type).label"
-            :color="typeColor(props.row.type).color"
+            :label="requestType(props.row.type).label"
+            :color="requestType(props.row.type).color"
           />
         </q-td>
       </template>
+      <template #body-cell-reason="props">
+        <q-td :props="props">
+          <span v-if="props.row.reason?.trim()">
+            {{ props.row.reason }}
+          </span>
+          <span v-else class="text-grey">—</span>
+        </q-td>
+      </template>
+
       <template #body-cell-status="props">
         <q-td :props="props">
           <q-badge
             outline
-            :label="getRoleStatus(props.row.status).label"
-            :color="getRoleStatus(props.row.status).color"
+            :label="RoleStatus(props.row.status).label"
+            :color="RoleStatus(props.row.status).color"
           />
         </q-td>
       </template>
@@ -112,9 +121,13 @@
             <q-badge
               outline
               class="text-body2"
-              :label="getArticleStatus(props.row.status).label"
-              :color="getArticleStatus(props.row.status).color"
-            />
+              :label="articleStatus(props.row.status).label"
+              :color="articleStatus(props.row.status).color"
+            >
+              <q-tooltip v-if="props.row.status === 'rejected' && props.row.rejection_reason">
+                {{ props.row.rejection_reason }}
+              </q-tooltip>
+            </q-badge>
           </q-td>
         </template>
         <template #body-cell-actions="props">
@@ -193,6 +206,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { api } from 'src/boot/axios'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
+import { useStatusTheme } from '../../components/useStatusTheme'
+import { RoleStatusTheme } from '../../components/RoleStatusTheme'
+import { useRolesTheme } from '../../components/RolesTheme'
+
+const { requestType } = useRolesTheme()
+const { articleStatus } = useStatusTheme()
+const { RoleStatus } = RoleStatusTheme()
 
 const notify = useQuasaMsgs()
 const loading = ref(false)
@@ -247,44 +267,6 @@ const filteredArticleRequests = computed(() => {
   else if (filterStatus.value === 'rejected') list = list.filter((a) => a.status === 'rejected')
   return list
 })
-
-const articleStatusMap = {
-  submitted: { label: 'Pending', color: 'orange' },
-  published: { label: 'Approved', color: 'positive' },
-  rejected: { label: 'Rejected', color: 'negative' },
-}
-
-function getArticleStatus(status) {
-  return articleStatusMap[status] ?? { label: status, color: 'grey' }
-}
-
-const roleStatusMap = {
-  pending: { label: 'Pending', color: 'orange' },
-  approved: { label: 'Approved', color: 'positive' },
-  rejected: { label: 'Rejected', color: 'negative' },
-}
-
-function getRoleStatus(status) {
-  return roleStatusMap[status] ?? { label: status, color: 'grey' }
-}
-
-function typeColor(type) {
-  // if (type === 'role') return 'primary'
-  // if (type === 'permission') return 'teal'
-  // return 'grey'
-  const map = {
-    role: { label: 'Role', color: 'primary' },
-    permission: { label: 'Permission', color: 'teal' },
-  }
-  return map[type] ?? { label: type, color: 'grey' }
-}
-
-// function statusColor(status) {
-//   if (status === 'pending') return 'orange'
-//   if (status === 'approved') return 'positive'
-//   if (status === 'rejected') return 'negative'
-//   return 'grey'
-// }
 
 function requestRowClass(row, kind) {
   if (kind === 'access') {

@@ -17,62 +17,60 @@
       "
       table-header-class="text-uppercase"
     >
-        <template #body-cell-status="props">
-          <q-td :props="props">
-            <q-chip
-              dense
-              :color="statusColor(props.row.status)"
-              text-color="white"
-              size="sm"
-            >
-              {{ statusLabel(props.row.status) }}
-            </q-chip>
-          </q-td>
-        </template>
-        <template #body-cell-type="props">
-          <q-td :props="props">
-            {{ props.row.type?.name ?? props.row.type_id }}
-          </q-td>
-        </template>
-        <template #body-cell-actions="props">
-          <q-td :props="props" class="q-gutter-x-xs">
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="edit"
-              color="primary"
-              @click="$router.push({ name: 'editorsEdit', params: { id: props.row.id } })"
-            >
-              <q-tooltip>Edit</q-tooltip>
-            </q-btn>
-            <q-btn
-              v-if="props.row.status === 'draft'"
-              flat
-              dense
-              round
-              size="sm"
-              icon="send"
-              color="orange"
-              @click="submitArticle(props.row)"
-            >
-              <q-tooltip>Submit for review</q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="delete"
-              color="negative"
-              @click="confirmDelete(props.row)"
-            >
-              <q-tooltip>Delete</q-tooltip>
-            </q-btn>
-          </q-td>
-        </template>
-      </q-table>
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <q-badge
+            outline
+            class="text-body2"
+            :label="articleStatus(props.row.status).label"
+            :color="articleStatus(props.row.status).color"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-type="props">
+        <q-td :props="props">
+          {{ props.row.type?.name ?? props.row.type_id }}
+        </q-td>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props" class="q-gutter-x-xs">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="edit"
+            color="primary"
+            @click="$router.push({ name: 'editorsEdit', params: { id: props.row.id } })"
+          >
+            <q-tooltip>Edit</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="props.row.status === 'draft'"
+            flat
+            dense
+            round
+            size="sm"
+            icon="send"
+            color="orange"
+            @click="submitArticle(props.row)"
+          >
+            <q-tooltip>Submit for review</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="delete"
+            color="negative"
+            @click="confirmDelete(props.row)"
+          >
+            <q-tooltip>Delete</q-tooltip>
+          </q-btn>
+        </q-td>
+      </template>
+    </q-table>
 
     <q-dialog v-model="deleteDialog">
       <q-card>
@@ -93,7 +91,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useContentStore } from 'src/stores/contentStore'
 import { useQuasaMsgs } from 'src/helper/quasaDialogs'
+import { useStatusTheme } from '../../components/useStatusTheme'
 
+const { articleStatus } = useStatusTheme()
 const contentStore = useContentStore()
 const notify = useQuasaMsgs()
 const loading = ref(false)
@@ -109,21 +109,6 @@ const columns = [
 ]
 
 const contentList = computed(() => contentStore.myArticles ?? [])
-
-function statusLabel(status) {
-  const map = { draft: 'Draft', submitted: 'Pending', published: 'Published', rejected: 'Rejected' }
-  return map[status] ?? status
-}
-
-function statusColor(status) {
-  const map = {
-    draft: 'grey',
-    submitted: 'orange',
-    published: 'positive',
-    rejected: 'negative',
-  }
-  return map[status] ?? 'grey'
-}
 
 async function load() {
   loading.value = true
