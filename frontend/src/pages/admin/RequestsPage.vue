@@ -45,16 +45,22 @@
     >
       <template #body-cell-type="props">
         <q-td :props="props">
-          <q-chip dense size="sm" :color="typeColor(props.row.type)" text-color="white">
-            {{ props.row.type }}
-          </q-chip>
+          <q-badge
+            outline
+            dense
+            class="text-body2"
+            :label="typeColor(props.row.type).label"
+            :color="typeColor(props.row.type).color"
+          />
         </q-td>
       </template>
       <template #body-cell-status="props">
         <q-td :props="props">
-          <q-chip dense size="sm" :color="statusColor(props.row.status)" text-color="white">
-            {{ props.row.status }}
-          </q-chip>
+          <q-badge
+            outline
+            :label="getRoleStatus(props.row.status).label"
+            :color="getRoleStatus(props.row.status).color"
+          />
         </q-td>
       </template>
       <template #body-cell-actions="props">
@@ -103,14 +109,12 @@
       >
         <template #body-cell-status="props">
           <q-td :props="props">
-            <q-chip
-              dense
-              size="sm"
-              :color="articleStatusColor(props.row.status)"
-              text-color="white"
-            >
-              {{ articleStatusLabel(props.row.status) }}
-            </q-chip>
+            <q-badge
+              outline
+              class="text-body2"
+              :label="getArticleStatus(props.row.status).label"
+              :color="getArticleStatus(props.row.status).color"
+            />
           </q-td>
         </template>
         <template #body-cell-actions="props">
@@ -244,28 +248,43 @@ const filteredArticleRequests = computed(() => {
   return list
 })
 
+const articleStatusMap = {
+  submitted: { label: 'Pending', color: 'orange' },
+  published: { label: 'Approved', color: 'positive' },
+  rejected: { label: 'Rejected', color: 'negative' },
+}
+
+function getArticleStatus(status) {
+  return articleStatusMap[status] ?? { label: status, color: 'grey' }
+}
+
+const roleStatusMap = {
+  pending: { label: 'Pending', color: 'orange' },
+  approved: { label: 'Approved', color: 'positive' },
+  rejected: { label: 'Rejected', color: 'negative' },
+}
+
+function getRoleStatus(status) {
+  return roleStatusMap[status] ?? { label: status, color: 'grey' }
+}
+
 function typeColor(type) {
-  if (type === 'role') return 'primary'
-  if (type === 'permission') return 'teal'
-  return 'grey'
+  // if (type === 'role') return 'primary'
+  // if (type === 'permission') return 'teal'
+  // return 'grey'
+  const map = {
+    role: { label: 'Role', color: 'primary' },
+    permission: { label: 'Permission', color: 'teal' },
+  }
+  return map[type] ?? { label: type, color: 'grey' }
 }
 
-function statusColor(status) {
-  if (status === 'pending') return 'orange'
-  if (status === 'approved') return 'positive'
-  if (status === 'rejected') return 'negative'
-  return 'grey'
-}
-
-function articleStatusLabel(status) {
-  const map = { submitted: 'Pending', published: 'Approved', rejected: 'Rejected' }
-  return map[status] ?? status
-}
-
-function articleStatusColor(status) {
-  const map = { submitted: 'orange', published: 'positive', rejected: 'negative' }
-  return map[status] ?? 'grey'
-}
+// function statusColor(status) {
+//   if (status === 'pending') return 'orange'
+//   if (status === 'approved') return 'positive'
+//   if (status === 'rejected') return 'negative'
+//   return 'grey'
+// }
 
 function requestRowClass(row, kind) {
   if (kind === 'access') {
