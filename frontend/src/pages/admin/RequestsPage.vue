@@ -43,57 +43,47 @@
       class="q-mb-lg"
       :row-class="(row) => requestRowClass(row, 'access')"
     >
-        <template #body-cell-type="props">
-          <q-td :props="props">
-            <q-chip
+      <template #body-cell-type="props">
+        <q-td :props="props">
+          <q-chip dense size="sm" :color="typeColor(props.row.type)" text-color="white">
+            {{ props.row.type }}
+          </q-chip>
+        </q-td>
+      </template>
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <q-chip dense size="sm" :color="statusColor(props.row.status)" text-color="white">
+            {{ props.row.status }}
+          </q-chip>
+        </q-td>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <template v-if="props.row.status === 'pending'">
+            <q-btn
+              flat
               dense
               size="sm"
-              :color="typeColor(props.row.type)"
-              text-color="white"
+              color="positive"
+              icon="check"
+              @click="approveAccessRequest(props.row)"
             >
-              {{ props.row.type }}
-            </q-chip>
-          </q-td>
-        </template>
-        <template #body-cell-status="props">
-          <q-td :props="props">
-            <q-chip
+              <q-tooltip>Approve</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
               dense
               size="sm"
-              :color="statusColor(props.row.status)"
-              text-color="white"
+              color="negative"
+              icon="close"
+              @click="openRejectAccess(props.row)"
             >
-              {{ props.row.status }}
-            </q-chip>
-          </q-td>
-        </template>
-        <template #body-cell-actions="props">
-          <q-td :props="props">
-            <template v-if="props.row.status === 'pending'">
-              <q-btn
-                flat
-                dense
-                size="sm"
-                color="positive"
-                icon="check"
-                @click="approveAccessRequest(props.row)"
-              >
-                <q-tooltip>Approve</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                dense
-                size="sm"
-                color="negative"
-                icon="close"
-                @click="openRejectAccess(props.row)"
-              >
-                <q-tooltip>Reject</q-tooltip>
-              </q-btn>
-            </template>
-            <span v-else class="text-grey">—</span>
-          </q-td>
-        </template>
+              <q-tooltip>Reject</q-tooltip>
+            </q-btn>
+          </template>
+          <span v-else class="text-grey">—</span>
+        </q-td>
+      </template>
     </q-table>
 
     <!-- Article requests -->
@@ -226,7 +216,12 @@ const accessColumns = [
 const articleColumns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
   { name: 'title', label: 'Title', field: 'title', align: 'left' },
-  { name: 'author', label: 'Author', field: (row) => row.author?.name ?? row.author_id, align: 'left' },
+  {
+    name: 'author',
+    label: 'Author',
+    field: (row) => row.author?.name ?? row.author_id,
+    align: 'left',
+  },
   { name: 'status', label: 'Status', field: 'status', align: 'center' },
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
@@ -286,10 +281,8 @@ async function loadAccessRequests() {
 }
 
 async function loadArticleRequests() {
-  const res = await api.get('/api/admin/articles')
-  articleRequests.value = (res.data ?? []).filter(
-    (a) => a.status === 'submitted' || a.status === 'published' || a.status === 'rejected'
-  )
+  const res = await api.get('/api/all-articles')
+  articleRequests.value = res.data ?? []
 }
 
 async function load() {

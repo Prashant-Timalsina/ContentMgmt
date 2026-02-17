@@ -41,10 +41,9 @@
 
           <q-btn
             v-else
-            flat
-            no-caps
             label="Logout"
-            color="red-5"
+            color="negative"
+            text-color="white"
             @click="logout"
             class="text-weight-bold"
           />

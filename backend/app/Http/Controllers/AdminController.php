@@ -56,11 +56,4 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * List all articles (admin). Used for pending/review list.
-     */
-    public function articles()
-    {
-        return Content::with('type', 'author')->latest()->get();
-    }
 }

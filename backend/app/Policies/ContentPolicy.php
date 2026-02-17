@@ -9,7 +9,7 @@ class ContentPolicy
     /**
      * Author Articles
      */
-    public function viewOne(User $user)
+    public function viewOwn(User $user)
     {
         return $user->can('create_articles');
     }

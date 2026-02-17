@@ -4,6 +4,7 @@ import { api } from 'src/boot/axios'
 export const useContentStore = defineStore('content', {
   state: () => ({
     publishedArticles: [],
+    reviewArticles: [],
     myArticles: [],
     articleTypes: [],
     currentArticle: null,
@@ -12,6 +13,12 @@ export const useContentStore = defineStore('content', {
     async fetchPublished() {
       const res = await api.get('/api/articles')
       this.publishedArticles = res.data
+      return res.data
+    },
+
+    async fetchAllArticles() {
+      const res = await api.get('api/all-articles')
+      this.reviewArticles = res.data
       return res.data
     },
 
