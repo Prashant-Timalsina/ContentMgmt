@@ -268,7 +268,7 @@ const permissionDialog = ref(false)
 const selectedPermissions = ref([])
 
 const search = ref('')
-const visibleColumns = ref(['id', 'name', 'email', 'role', 'pending', 'permissions', 'actions'])
+const visibleColumns = ref(['id', 'name', 'email', 'role', 'permissions', 'actions'])
 const pagination = ref({ page: 1, rowsPerPage: 15 })
 
 const roleOptions = computed(() => (authStore.role ?? []).map((r) => r.name ?? r))
