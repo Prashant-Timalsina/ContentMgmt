@@ -95,9 +95,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('can:edit_articles');
 
     // Delete
-    Route::delete('/articles/{content}',[ContentController::class,'destroy'])
-        ->middleware('can:delete_articles');
-
+    Route::delete('/articles/{content}',[ContentController::class,'destroy']);
+    
     // Submit for review
     Route::post('/articles/{content}/submit',[ContentController::class,'submit']);
 

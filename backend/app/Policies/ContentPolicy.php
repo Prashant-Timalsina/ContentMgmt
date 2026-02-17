@@ -65,8 +65,13 @@ class ContentPolicy
      */
     public function delete(User $user, Content $content)
     {
-        return $user->id === $content->author_id
-            || $user->can('manage_users');
+        if ($user->hasRole('admin')) return true;
+
+        if ($content->author_id !== $user->id) return false;
+
+        if ($content->status === Content::STATUS_DRAFT) return true;
+
+        return $user->can('delete_articles');
     }
 
     /**
