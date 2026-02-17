@@ -151,7 +151,6 @@ const paginatedList = computed(() => {
   return filteredArticles.value.slice(start, start + rowsPerPage)
 })
 
-// Reset page on filter change
 watch([selectedType, searchQuery, publishedArticles], () => {
   currentPage.value = 1
 })

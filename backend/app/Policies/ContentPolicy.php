@@ -7,15 +7,23 @@ use App\Models\Content;
 class ContentPolicy
 {
     /**
-     * View any articles (dashboard listing)
+     * Author Articles
      */
-    public function viewAny(User $user)
+    public function viewOne(User $user)
     {
-        return true;
+        return $user->can('create_articles');
+    }
+    
+    /**
+     * Admin Review list of articles
+     */
+    public function viewAll(User $user)
+    {
+        return $user->can('publish_articles');
     }
 
     /**
-     * View single article
+     * Public Viewing of articles
      */
     public function view(?User $user, Content $content)
     {
@@ -25,11 +33,13 @@ class ContentPolicy
         }
 
         // For non-published articles, user must be authenticated
-        if (!$user) {
-            return false;
-        }
+        if (!$user) return false;
 
-        return $user->id === $content->author_id;
+        //Author can see own
+        if( $user->id === $content->author_id) return true;
+
+        // Admon sees non draft
+        return $user->can('publish_articles');
     }
 
     /**
@@ -45,8 +55,9 @@ class ContentPolicy
      */
     public function update(User $user, Content $content)
     {
-        return $user->id === $content->author_id
-            || $user->can('publish_articles');
+        if( $user->id === $content->author_id) return true;
+        
+        return $user->can('publish_articles');
     }
 
     /**

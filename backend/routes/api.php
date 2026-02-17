@@ -66,7 +66,7 @@ Route::middleware(['auth:sanctum'])->group(function(){
 */
 
 // Public published articles (no authentication required)
-Route::get('/articles',[ContentController::class,'showAll']);
+Route::get('/articles',[ContentController::class,'indexPublic']);
 Route::get('/articles/{content}',[ContentController::class,'show']);
 Route::get('/articles_type',function(){
     return App\Models\ArticleType::all();
@@ -74,14 +74,16 @@ Route::get('/articles_type',function(){
 Route::get('/articles_type/{type}', function ($type){
     return App\Models\ArticleType::where('id',$type)->first();
 });
+
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     
     // Editor/Admin personal articles
-    Route::get('/my-articles',[ContentController::class,'index'])
+    Route::get('/my-articles',[ContentController::class,'myArticles'])
         ->middleware('can:create_articles');
 
-    Route::get('/all-articles',[ContentController::class,'viewAll'])
+    // Admin sees all articles (all status)
+    Route::get('/all-articles',[ContentController::class,'allArticles'])
         ->middleware('can:publish_articles');
     
     // Create

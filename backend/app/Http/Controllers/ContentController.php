@@ -9,43 +9,43 @@ use Illuminate\Support\Str;
 
 class ContentController extends Controller
 {
-    
-    // List all articles (role-based visibility)
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny',Content::class);
-        //
-        $user = $request->user();
-
-        // For editors, editor's own articles
-        return Content::where('author_id',$user->id)
-            ->with('type')->latest()->get();
+    // Public User sees all published articles
+    public function indexPublic(){
+        return Content::where('status',Content::STATUS_PUBLISHED)
+            ->with('type','author')
+            ->latest('published_at')
+            ->get();
     }
 
-    public function ViewAll(Content $content){
-        $this->authorize('viewAny',AdminContentPolicy::class);
+    //Public Single article
+    public function show(Content $content)
+    {
+        $this->authorize('view',$content);
 
-        $contents = $content->where('status', '!=', Content::STATUS_DRAFT)
+        return $content->load('author','type');
+    }
+
+    // Author specific articles.
+    public function myArticles(Request $request){
+        $this->authorize('viewOwn',Content::class);
+
+        return Content::where('author_id', $request->user()->id)
+            ->with('type')
+            ->latest()
+            ->get();
+    }
+    
+
+    // List all articles (role-based visibility)
+    public function allArticles(){
+        $this->authorize('viewAll',Content::class);
+
+        $contents = Content::where('status', '!=', Content::STATUS_DRAFT)
             ->with('author','type')
             ->latest('created_at')
             ->get();
         return $contents;
     }
-
-    public function adminView(Content $content){
-        $this->authorize('view', AdminContentPolicy::class);
-
-        return $content->load('type','author');
-    }
-
-    //Every User can see the published articles
-    public function showAll(){
-        return Content::where('status',Content::STATUS_PUBLISHED)
-            ->with(['author','type'])
-            ->latest('published_at')
-            ->get();
-    }
-
 
 
     // A draft article
@@ -70,23 +70,6 @@ class ContentController extends Controller
 
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Request $request, Content $content)
-    {
-        // Allow public access to published articles, require auth for others
-        if ($content->status !== Content::STATUS_PUBLISHED) {
-            // For non-published articles, user must be authenticated
-            if (!$request->user()) {
-                return response()->json(['message' => 'Unauthorized'], 401);
-            }
-            $this->authorize('view', $content);
-        }
-
-        return $content->load('type','author');
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Content $content)
@@ -102,6 +85,10 @@ class ContentController extends Controller
 
         if(isset($validated['title'])){
             $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        }
+
+        if(($validated['status'] ?? null)===Content::STATUS_PUBLISHED){
+            $validated['published_at'] = now();
         }
 
         $content->update($validated);
